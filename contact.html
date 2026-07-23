@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Fat Elephant</title>
+<meta name="description" content="Get in touch with Fat Elephant to start a product or technology project.">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><img src="assets/logo-wide.png" alt="Fat Elephant"></a>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-right">
+      <a href="contact.html" class="btn btn-primary">Start a Project</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="page-header">
+  <div class="container">
+    <span class="eyebrow">Get in Touch</span>
+    <h1>Let's build something.</h1>
+    <p>Tell us a bit about your idea or product, and we'll get back to you about how Fat Elephant can help.</p>
+  </div>
+</div>
+
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="contact-grid">
+
+      <div class="contact-info reveal">
+        <span class="eyebrow eyebrow--on-dark">Contact Details</span>
+        <h3>Prefer to reach out directly?</h3>
+        <p>Email us and we'll typically get back to you within 1–2 business days.</p>
+
+        <div class="contact-detail">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          </div>
+          <div>
+            <strong>Email</strong>
+            <a href="mailto:trunklink@fatelephant.co.in">trunklink@fatelephant.co.in</a>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9s1.3-6.4 3.8-9z"/></svg>
+          </div>
+          <div>
+            <strong>Website</strong>
+            <a href="https://www.fatelephant.co.in" target="_blank" rel="noopener">www.fatelephant.co.in</a>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+          </div>
+          <div>
+            <strong>Location</strong>
+            <span>The Wild, Working Worldwide.</span>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          </div>
+          <div>
+            <strong>Response Time</strong>
+            <span>1–2 business days</span>
+          </div>
+        </div>
+      </div>
+
+      <form class="form-card reveal" id="contactForm">
+        <div class="form-row">
+          <div class="field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your name" required>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@company.com" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="project">Project Type</label>
+          <select id="project" name="project">
+            <option>Product Strategy &amp; Advisory</option>
+            <option>Experience &amp; Interface Design</option>
+            <option>Bespoke Application Engineering</option>
+            <option>Web Platforms &amp; Presence</option>
+            <option>Open Source Craftsmanship</option>
+            <option>Cloud, Scale &amp; Stewardship</option>
+            <option>Not sure yet</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Tell us about your idea or product..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+        <p class="form-note">Submitting opens your email client with this message addressed to trunklink@fatelephant.co.in.</p>
+      </form>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="assets/logo-wide.png" alt="Fat Elephant">
+        <p>Powered by big ideas, tiny egos, curiosity &amp; caffeine.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Sitemap</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:trunklink@fatelephant.co.in">trunklink@fatelephant.co.in</a></li>
+          <li><a href="https://www.fatelephant.co.in" target="_blank" rel="noopener">www.fatelephant.co.in</a></li>
+          <li><a href="contact.html">Start a project →</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> Fat Elephant. All rights reserved.</span>
+      <span>The Wild, Working Worldwide.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
