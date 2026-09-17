@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fat Elephant — Big Ideas. Built Fast. Shipped Right.</title>
+<title>Fat Elephant — Think Big. Think Fat.</title>
 <meta name="description" content="Fat Elephant helps ambitious founders and bold companies turn messy ideas into products people actually love. No endless decks. No corporate theatre.">
 <link rel="icon" type="image/png" href="assets/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,20 +15,26 @@
 
 <header class="navbar">
   <div class="container">
-    <a href="index.html" class="nav-logo"><img src="assets/logo-wide.png" alt="Fat Elephant"></a>
-    <nav>
-      <ul class="nav-links" id="navLinks">
+    <div class="nav-menu">
+      <button class="nav-menu-trigger" id="navMenuTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="navDropdown">
+        <svg class="nav-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Menu</span>
+      </button>
+      <ul class="nav-dropdown" id="navDropdown">
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
-    </nav>
+    </div>
+
+    <a href="index.html" class="nav-logo"><img src="assets/logo-wide.png" alt="Fat Elephant"></a>
+
     <div class="nav-right">
       <a href="contact.html" class="btn btn-primary">Start a Project</a>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
+      <a href="https://www.instagram.com/think.fat?stkn=MW05NG54ZzYxcDhmMA==" target="_blank" rel="noopener noreferrer" class="social-link nav-social" aria-label="Fat Elephant on Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/></svg>
+      </a>
     </div>
   </div>
 </header>
@@ -37,7 +43,7 @@
   <div class="container">
     <div class="hero-copy">
       <span class="eyebrow">Product &amp; Technology Studio</span>
-      <h1><span class="highlight">"Fat"</span> &amp; Big Ideas.<br>Built Fast.<br>Shipped Right.</h1>
+      <h1><span class="coco-regular">Think</span> <span class="coco-bold">Big</span>.<br><span class="coco-regular">Think</span> <span class="highlight coco-bold">Fat</span>.</h1>
       <p class="hero-lede">At Fat Elephant, we help ambitious founders and bold companies turn messy ideas into products people actually love. No endless decks. No corporate theatre.</p>
       <div class="hero-actions">
         <a href="contact.html" class="btn btn-primary">Start a Project</a>
@@ -51,8 +57,12 @@
   <div class="container">
     <span class="trusted-by-label">Our Clients</span>
     <div class="trusted-by-logos">
-      <img src="assets/clients/wisdomx.png" alt="WisdomX">
-      <img src="assets/clients/box-office-studio.png" alt="Box Office Studio">
+      <a href="https://www.wisdomx.co.uk/" target="_blank" rel="noopener noreferrer" aria-label="Visit WisdomX's website">
+        <img src="assets/clients/wisdomx.png" alt="WisdomX" class="is-wisdomx">
+      </a>
+      <a href="https://boxofficestudio.co.in/" target="_blank" rel="noopener noreferrer" aria-label="Visit Box Office Studio's website">
+        <img src="assets/clients/box-office-studio.png" alt="Box Office Studio">
+      </a>
     </div>
   </div>
 </div>
@@ -61,7 +71,7 @@
   <div class="container">
     <div class="section-head reveal">
       <span class="eyebrow">What We Do</span>
-      <h2>Ideas Are Cheap.<br>Execution Isn't.</h2>
+      <h2>We Build.</h2>
       <p>From napkin sketches to scalable platforms, we design, build and launch products that make businesses impossible to ignore.</p>
     </div>
 
@@ -170,6 +180,9 @@
       <div class="footer-brand">
         <img src="assets/logo-wide.png" alt="Fat Elephant">
         <p>Powered by big ideas, tiny egos, curiosity &amp; caffeine.</p>
+        <a href="https://www.instagram.com/think.fat?stkn=MW05NG54ZzYxcDhmMA==" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Fat Elephant on Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/></svg>
+        </a>
       </div>
       <div class="footer-col">
         <h4>Sitemap</h4>

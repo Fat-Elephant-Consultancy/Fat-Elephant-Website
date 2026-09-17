@@ -15,20 +15,26 @@
 
 <header class="navbar">
   <div class="container">
-    <a href="index.html" class="nav-logo"><img src="assets/logo-wide.png" alt="Fat Elephant"></a>
-    <nav>
-      <ul class="nav-links" id="navLinks">
+    <div class="nav-menu">
+      <button class="nav-menu-trigger" id="navMenuTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="navDropdown">
+        <svg class="nav-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Menu</span>
+      </button>
+      <ul class="nav-dropdown" id="navDropdown">
         <li><a href="index.html">Home</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="about.html" class="active">About</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
-    </nav>
+    </div>
+
+    <a href="index.html" class="nav-logo"><img src="assets/logo-wide.png" alt="Fat Elephant"></a>
+
     <div class="nav-right">
       <a href="contact.html" class="btn btn-primary">Start a Project</a>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
+      <a href="https://www.instagram.com/think.fat?stkn=MW05NG54ZzYxcDhmMA==" target="_blank" rel="noopener noreferrer" class="social-link nav-social" aria-label="Fat Elephant on Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/></svg>
+      </a>
     </div>
   </div>
 </header>
@@ -141,6 +147,9 @@
       <div class="footer-brand">
         <img src="assets/logo-wide.png" alt="Fat Elephant">
         <p>Powered by big ideas, tiny egos, curiosity &amp; caffeine.</p>
+        <a href="https://www.instagram.com/think.fat?stkn=MW05NG54ZzYxcDhmMA==" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Fat Elephant on Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/></svg>
+        </a>
       </div>
       <div class="footer-col">
         <h4>Sitemap</h4>
