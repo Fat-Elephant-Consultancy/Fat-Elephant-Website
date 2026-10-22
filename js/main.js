@@ -401,8 +401,9 @@ if (canHover && !prefersReducedMotion) {
   });
 }
 
-// About page: a faint pixel field behind the content. Pixels form around the cursor and
-// fade away again. It sits behind everything, so text and cards are never covered.
+// About page: a faint dot grid behind the content. Pixels form around the cursor and fade away
+// again. "Connect the dots" lets visitors draw lines between the dots; once they are done, the
+// drawing tucks back behind the content so text and cards are never covered.
 (function () {
   if (!document.body.classList.contains('page-about')) return;
 
@@ -411,13 +412,16 @@ if (canHover && !prefersReducedMotion) {
   field.setAttribute('aria-hidden', 'true');
   document.body.appendChild(field);
 
-  // Touch devices and reduced-motion users just get the static faint grid
+  // Touch devices just get the static faint grid
   var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!finePointer || prefersReducedMotion) return;
+  if (!finePointer) return;
 
-  var canvas = document.createElement('canvas');
-  field.appendChild(canvas);
-  var ctx = canvas.getContext('2d');
+  var trail = document.createElement('canvas');
+  var ink = document.createElement('canvas');
+  field.appendChild(trail);
+  field.appendChild(ink);
+  var ctx = trail.getContext('2d');
+  var inkCtx = ink.getContext('2d');
 
   var CELL = 16;
   var RADIUS = 96;
@@ -426,12 +430,25 @@ if (canHover && !prefersReducedMotion) {
   var cells = new Map();
   var rafId = 0;
 
+  // Drawing state: each stroke is a list of [column, row] dots, in page coordinates
+  var strokes = [];
+  var current = null;
+  var drawing = false;
+  var pen = null;
+  var inkQueued = false;
+
   function resize() {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(window.innerWidth * dpr);
-    canvas.height = Math.round(window.innerHeight * dpr);
+    [trail, ink].forEach(function (c) {
+      c.width = Math.round(window.innerWidth * dpr);
+      c.height = Math.round(window.innerHeight * dpr);
+    });
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    inkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    renderInk();
   }
+
+  // ---- Hover trail ----
 
   function drawCell(c, now) {
     var age = now - c.born;
@@ -508,13 +525,170 @@ if (canHover && !prefersReducedMotion) {
   window.addEventListener(
     'pointermove',
     function (e) {
-      if (e.pointerType !== 'mouse') return;
+      if (e.pointerType !== 'mouse' || drawing || prefersReducedMotion) return;
       stamp(e.clientX, e.clientY);
       if (!rafId) rafId = requestAnimationFrame(frame);
     },
     { passive: true }
   );
 
+  // ---- Connect the dots ----
+
+  // The dot grid is painted at the centre of every 16px tile and scrolls with the page
+  function nodeAt(clientX, clientY) {
+    return [
+      Math.round((clientX - CELL / 2) / CELL),
+      Math.round((clientY + window.pageYOffset - CELL / 2) / CELL)
+    ];
+  }
+
+  function toScreen(n) {
+    return [n[0] * CELL + CELL / 2, n[1] * CELL + CELL / 2 - window.pageYOffset];
+  }
+
+  function renderInk() {
+    inkQueued = false;
+    inkCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    inkCtx.lineWidth = 2;
+    inkCtx.lineCap = 'square';
+    inkCtx.lineJoin = 'miter';
+    inkCtx.strokeStyle = 'rgba(7, 102, 83, 0.7)';
+
+    strokes.forEach(function (s) {
+      inkCtx.beginPath();
+      s.forEach(function (n, i) {
+        var p = toScreen(n);
+        if (i) inkCtx.lineTo(p[0], p[1]);
+        else inkCtx.moveTo(p[0], p[1]);
+      });
+      inkCtx.stroke();
+
+      inkCtx.fillStyle = 'rgba(12, 52, 44, 0.85)';
+      s.forEach(function (n) {
+        var p = toScreen(n);
+        inkCtx.fillRect(p[0] - 2, p[1] - 2, 4, 4);
+      });
+    });
+
+    // The dot the next line will start from
+    if (drawing && pen) {
+      var q = toScreen(pen);
+      inkCtx.fillStyle = '#e3ef26';
+      inkCtx.fillRect(q[0] - 5, q[1] - 5, 10, 10);
+      inkCtx.lineWidth = 1.5;
+      inkCtx.strokeStyle = '#0c342c';
+      inkCtx.strokeRect(q[0] - 5, q[1] - 5, 10, 10);
+    }
+  }
+
+  function queueInk() {
+    if (inkQueued) return;
+    inkQueued = true;
+    requestAnimationFrame(renderInk);
+  }
+
+  // Walk from the last dot to the new one so every segment joins neighbouring dots
+  function extend(to) {
+    var last = current[current.length - 1];
+    var x = last[0];
+    var y = last[1];
+    var dx = Math.abs(to[0] - x);
+    var dy = Math.abs(to[1] - y);
+    var sx = x < to[0] ? 1 : -1;
+    var sy = y < to[1] ? 1 : -1;
+    var err = dx - dy;
+
+    while (x !== to[0] || y !== to[1]) {
+      var e2 = 2 * err;
+      if (e2 > -dy) { err -= dy; x += sx; }
+      if (e2 < dx) { err += dx; y += sy; }
+      current.push([x, y]);
+    }
+  }
+
+  var bar = document.createElement('div');
+  bar.className = 'draw-bar';
+
+  var toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'draw-toggle';
+  toggle.setAttribute('aria-pressed', 'false');
+  toggle.textContent = 'Connect the dots';
+
+  var clearBtn = document.createElement('button');
+  clearBtn.type = 'button';
+  clearBtn.className = 'draw-clear';
+  clearBtn.textContent = 'Clear';
+  clearBtn.hidden = true;
+
+  bar.appendChild(toggle);
+  bar.appendChild(clearBtn);
+  document.body.appendChild(bar);
+
+  function setDrawing(on) {
+    drawing = on;
+    current = null;
+    pen = null;
+    field.classList.toggle('is-drawing', on);
+    toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+    toggle.textContent = on ? 'Done' : 'Connect the dots';
+    queueInk();
+  }
+
+  toggle.addEventListener('click', function () {
+    setDrawing(!drawing);
+  });
+
+  clearBtn.addEventListener('click', function () {
+    strokes = [];
+    current = null;
+    clearBtn.hidden = true;
+    queueInk();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && drawing) setDrawing(false);
+  });
+
+  field.addEventListener('pointerdown', function (e) {
+    if (!drawing || e.button !== 0) return;
+    e.preventDefault();
+    field.setPointerCapture(e.pointerId);
+    pen = nodeAt(e.clientX, e.clientY);
+    current = [pen];
+    strokes.push(current);
+    clearBtn.hidden = false;
+    queueInk();
+  });
+
+  field.addEventListener('pointermove', function (e) {
+    if (!drawing) return;
+    pen = nodeAt(e.clientX, e.clientY);
+    if (current) extend(pen);
+    queueInk();
+  });
+
+  function endStroke() {
+    current = null;
+  }
+
+  field.addEventListener('pointerup', endStroke);
+  field.addEventListener('pointercancel', endStroke);
+  field.addEventListener('pointerleave', function () {
+    if (current) return;
+    pen = null;
+    queueInk();
+  });
+
+  // The dots scroll with the page, so a drawing stays attached to the content it was drawn beside
+  function onScroll() {
+    field.style.backgroundPosition = '0 ' + -window.pageYOffset + 'px';
+    if (strokes.length) queueInk();
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', resize);
+  onScroll();
   resize();
 })();

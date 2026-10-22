@@ -1641,9 +1641,58 @@ article.stack-card:last-of-type {
 }
 
 .pixel-field canvas {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* Draw mode: the field lifts above the page so visitors can join the dots, then tucks back behind it */
+.pixel-field.is-drawing {
+  z-index: 40;
+  pointer-events: auto;
+  cursor: crosshair;
+  user-select: none;
+  background-image: radial-gradient(circle at center, rgba(12, 52, 44, 0.34) 0 1px, transparent 1.8px);
+}
+
+.draw-bar {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  display: flex;
+  gap: 8px;
+}
+
+.draw-bar button {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--teal-darkest);
+  background: var(--cream);
+  border: 1px solid rgba(12, 52, 44, 0.28);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.draw-bar button:hover,
+.draw-bar button:focus-visible {
+  background: var(--lime);
+  border-color: var(--teal-darkest);
+}
+
+.draw-bar button[aria-pressed="true"] {
+  background: var(--teal-darkest);
+  border-color: var(--teal-darkest);
+  color: var(--cream);
+}
+
+.draw-bar button[hidden] {
+  display: none;
 }
 
 /* ---------- Manifesto ---------- */
