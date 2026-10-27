@@ -401,9 +401,8 @@ if (canHover && !prefersReducedMotion) {
   });
 }
 
-// About page: a faint dot grid behind the content. Pixels form around the cursor and fade away
-// again. "Connect the dots" lets visitors draw lines between the dots; once they are done, the
-// drawing tucks back behind the content so text and cards are never covered.
+// About page: a faint pixel field behind the content. Pixels form around the cursor and
+// fade away again. It sits behind everything, so text and cards are never covered.
 (function () {
   if (!document.body.classList.contains('page-about')) return;
 
@@ -412,16 +411,13 @@ if (canHover && !prefersReducedMotion) {
   field.setAttribute('aria-hidden', 'true');
   document.body.appendChild(field);
 
-  // Touch devices just get the static faint grid
+  // Touch devices and reduced-motion users just get the static faint grid
   var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!finePointer) return;
+  if (!finePointer || prefersReducedMotion) return;
 
-  var trail = document.createElement('canvas');
-  var ink = document.createElement('canvas');
-  field.appendChild(trail);
-  field.appendChild(ink);
-  var ctx = trail.getContext('2d');
-  var inkCtx = ink.getContext('2d');
+  var canvas = document.createElement('canvas');
+  field.appendChild(canvas);
+  var ctx = canvas.getContext('2d');
 
   var CELL = 16;
   var RADIUS = 96;
@@ -430,25 +426,12 @@ if (canHover && !prefersReducedMotion) {
   var cells = new Map();
   var rafId = 0;
 
-  // Drawing state: each stroke is a list of [column, row] dots, in page coordinates
-  var strokes = [];
-  var current = null;
-  var drawing = false;
-  var pen = null;
-  var inkQueued = false;
-
   function resize() {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    [trail, ink].forEach(function (c) {
-      c.width = Math.round(window.innerWidth * dpr);
-      c.height = Math.round(window.innerHeight * dpr);
-    });
+    canvas.width = Math.round(window.innerWidth * dpr);
+    canvas.height = Math.round(window.innerHeight * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    inkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    renderInk();
   }
-
-  // ---- Hover trail ----
 
   function drawCell(c, now) {
     var age = now - c.born;
@@ -525,170 +508,290 @@ if (canHover && !prefersReducedMotion) {
   window.addEventListener(
     'pointermove',
     function (e) {
-      if (e.pointerType !== 'mouse' || drawing || prefersReducedMotion) return;
+      if (e.pointerType !== 'mouse') return;
       stamp(e.clientX, e.clientY);
       if (!rafId) rafId = requestAnimationFrame(frame);
     },
     { passive: true }
   );
 
-  // ---- Connect the dots ----
+  window.addEventListener('resize', resize);
+  resize();
+})();
 
-  // The dot grid is painted at the centre of every 16px tile and scrolls with the page
-  function nodeAt(clientX, clientY) {
-    return [
-      Math.round((clientX - CELL / 2) / CELL),
-      Math.round((clientY + window.pageYOffset - CELL / 2) / CELL)
-    ];
-  }
+// Home page, "How we work": paper notes you can pick up and move around the desk, and a
+// question note whose answer is sent to us once an email address is given. Dragging is for wide screens
+// with a mouse; elsewhere the notes just stack.
+(function () {
+  var board = document.querySelector('.desk-board');
+  if (!board) return;
 
-  function toScreen(n) {
-    return [n[0] * CELL + CELL / 2, n[1] * CELL + CELL / 2 - window.pageYOffset];
-  }
+  var notes = Array.prototype.slice.call(board.querySelectorAll('.note'));
+  var form = board.querySelector('#askForm');
+  var noteEl = board.querySelector('.note--ask');
 
-  function renderInk() {
-    inkQueued = false;
-    inkCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  var dialog = document.getElementById('shipDialog');
 
-    inkCtx.lineWidth = 2;
-    inkCtx.lineCap = 'square';
-    inkCtx.lineJoin = 'miter';
-    inkCtx.strokeStyle = 'rgba(7, 102, 83, 0.7)';
+  if (form && dialog) {
+    var status = form.querySelector('#askStatus');
+    var textarea = form.querySelector('#askNote');
+    var stamp = noteEl.querySelector('.stamp');
+    var shipForm = document.getElementById('shipForm');
+    var emailInput = document.getElementById('shipEmail');
+    var shipError = document.getElementById('shipError');
+    var shipGo = document.getElementById('shipGo');
+    var shipDone = document.getElementById('shipDone');
+    var pending = null;
 
-    strokes.forEach(function (s) {
-      inkCtx.beginPath();
-      s.forEach(function (n, i) {
-        var p = toScreen(n);
-        if (i) inkCtx.lineTo(p[0], p[1]);
-        else inkCtx.moveTo(p[0], p[1]);
-      });
-      inkCtx.stroke();
+    var shipped = function (on, label) {
+      if (label) stamp.textContent = label;
+      noteEl.classList.toggle('is-shipped', on);
+    };
 
-      inkCtx.fillStyle = 'rgba(12, 52, 44, 0.85)';
-      s.forEach(function (n) {
-        var p = toScreen(n);
-        inkCtx.fillRect(p[0] - 2, p[1] - 2, 4, 4);
+    form.addEventListener('change', function () { shipped(false); });
+    textarea.addEventListener('input', function () { shipped(false); });
+
+    var resetDialog = function () {
+      shipForm.hidden = false;
+      shipDone.hidden = true;
+      shipGo.disabled = false;
+      shipGo.textContent = 'Think Fat';
+      shipError.textContent = '';
+      emailInput.removeAttribute('aria-invalid');
+    };
+
+    // Step one: check there is something to ship, then ask for an email address
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var picked = form.querySelector('input[name="holdback"]:checked');
+      var note = textarea.value.trim();
+
+      if (!picked && !note) {
+        status.className = 'ask-status is-error';
+        status.textContent = 'Pick an answer or write us a note first.';
+        return;
+      }
+
+      status.className = 'ask-status';
+      status.textContent = '';
+      pending = { answer: picked ? picked.value : '', note: note };
+
+      resetDialog();
+      dialog.showModal();
+      emailInput.focus();
+    });
+
+    // Step two: an email address is required before anything is shipped
+    var deliver = function (email) {
+      var lines = [
+        'Hi Fat Elephant,',
+        '',
+        'Here is my answer from your website.',
+        '',
+        "What's holding your idea back? " + (pending.answer || '(no answer picked)')
+      ];
+      if (pending.note) lines.push('', 'Note: ' + pending.note);
+      lines.push('', 'Reply to: ' + email);
+
+      // an online form service can be wired in by setting data-endpoint on the dialog
+      var endpoint = (dialog.getAttribute('data-endpoint') || '').trim();
+
+      if (endpoint) {
+        return fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            answer: pending.answer,
+            note: pending.note,
+            source: 'home-desk'
+          })
+        }).then(function (res) {
+          if (!res.ok) throw new Error('send failed');
+          return 'online';
+        });
+      }
+
+      window.location.href = 'mailto:trunklink@fatelephant.co.in' +
+        '?subject=' + encodeURIComponent('Feedback from the website') +
+        '&body=' + encodeURIComponent(lines.join('\n'));
+      return Promise.resolve('email');
+    };
+
+    var celebrate = function (mode, email) {
+      var online = mode === 'online';
+      document.getElementById('shipDoneTitle').textContent = online ? 'Shipped.' : 'Nearly there.';
+      document.getElementById('shipDoneText').textContent = online
+        ? "We've got your note and we'll write back to " + email + '.'
+        : "Your email app is opening with your note ready. Press send and it's with us.";
+
+      shipForm.hidden = true;
+      shipDone.hidden = false;
+
+      window.setTimeout(function () {
+        if (dialog.open) dialog.close();
+        shipped(true, online ? 'Shipped!' : 'Ready!');
+        form.reset();
+        pending = null;
+      }, online ? 2200 : 3200);
+    };
+
+    shipForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var email = emailInput.value.trim();
+
+      // the hidden field is only ever filled in by bots
+      if (shipForm.elements.website && shipForm.elements.website.value) return;
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        emailInput.setAttribute('aria-invalid', 'true');
+        shipError.textContent = 'Please enter a valid email address.';
+        emailInput.focus();
+        return;
+      }
+
+      emailInput.removeAttribute('aria-invalid');
+      shipError.textContent = '';
+      shipGo.disabled = true;
+      shipGo.textContent = 'Shipping...';
+
+      deliver(email).then(function (mode) {
+        celebrate(mode, email);
+      }).catch(function () {
+        shipGo.disabled = false;
+        shipGo.textContent = 'Think Fat';
+        shipError.textContent = "That didn't go through. Please try again, or email trunklink@fatelephant.co.in.";
       });
     });
 
-    // The dot the next line will start from
-    if (drawing && pen) {
-      var q = toScreen(pen);
-      inkCtx.fillStyle = '#e3ef26';
-      inkCtx.fillRect(q[0] - 5, q[1] - 5, 10, 10);
-      inkCtx.lineWidth = 1.5;
-      inkCtx.strokeStyle = '#0c342c';
-      inkCtx.strokeRect(q[0] - 5, q[1] - 5, 10, 10);
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog || e.target.closest('[data-close]')) dialog.close();
+    });
+
+    dialog.addEventListener('close', function () {
+      emailInput.value = '';
+      resetDialog();
+    });
+  }
+
+  var canDrag = window.matchMedia('(min-width: 861px) and (hover: hover) and (pointer: fine)');
+  var top = 10;
+
+  function clamp(v, lo, hi) {
+    return Math.min(hi, Math.max(lo, v));
+  }
+
+  notes.forEach(function (note) {
+    var x = 0;
+    var y = 0;
+    var grab = null;
+
+    function place() {
+      note.style.setProperty('--dx', x + 'px');
+      note.style.setProperty('--dy', y + 'px');
     }
-  }
 
-  function queueInk() {
-    if (inkQueued) return;
-    inkQueued = true;
-    requestAnimationFrame(renderInk);
-  }
-
-  // Walk from the last dot to the new one so every segment joins neighbouring dots
-  function extend(to) {
-    var last = current[current.length - 1];
-    var x = last[0];
-    var y = last[1];
-    var dx = Math.abs(to[0] - x);
-    var dy = Math.abs(to[1] - y);
-    var sx = x < to[0] ? 1 : -1;
-    var sy = y < to[1] ? 1 : -1;
-    var err = dx - dy;
-
-    while (x !== to[0] || y !== to[1]) {
-      var e2 = 2 * err;
-      if (e2 > -dy) { err -= dy; x += sx; }
-      if (e2 < dx) { err += dx; y += sy; }
-      current.push([x, y]);
+    // keep the note on the desk (offsetLeft/Top ignore transforms, so they are its resting spot)
+    function keepOnDesk() {
+      x = clamp(x, -note.offsetLeft, board.clientWidth - note.offsetLeft - note.offsetWidth);
+      y = clamp(y, -note.offsetTop, board.clientHeight - note.offsetTop - note.offsetHeight);
     }
+
+    note.addEventListener('pointerdown', function (e) {
+      if (!canDrag.matches || e.button !== 0) return;
+      if (e.target.closest('input, textarea, label, a, button')) return;
+
+      grab = { px: e.clientX, py: e.clientY, x: x, y: y };
+      note.setPointerCapture(e.pointerId);
+      note.classList.add('is-held');
+      note.style.zIndex = ++top;
+      e.preventDefault();
+    });
+
+    note.addEventListener('pointermove', function (e) {
+      if (!grab) return;
+      x = grab.x + e.clientX - grab.px;
+      y = grab.y + e.clientY - grab.py;
+      keepOnDesk();
+      place();
+    });
+
+    function drop() {
+      grab = null;
+      note.classList.remove('is-held');
+    }
+
+    note.addEventListener('pointerup', drop);
+    note.addEventListener('pointercancel', drop);
+
+    function refit() {
+      if (!canDrag.matches) {
+        x = 0;
+        y = 0;
+      } else {
+        keepOnDesk();
+      }
+      place();
+    }
+
+    window.addEventListener('resize', refit);
+  });
+})();
+
+// Home page, Fat Build teaser: the little product rebuilds itself in new colours and with
+// different features, a taste of what the full builder does. It only runs while on screen.
+(function () {
+  var dev = document.getElementById('fbDevice');
+  if (!dev || prefersReducedMotion) return;
+
+  var looks = [
+    ['#e3ef26', '#06231d', 'Fatwheels'],
+    ['#ff7a59', '#06231d', 'Pawfect'],
+    ['#4db5ff', '#06231d', 'Zing'],
+    ['#8e5cf0', '#fffdee', 'Orbit'],
+    ['#3fbf6e', '#06231d', 'Tidy']
+  ];
+
+  var names = dev.querySelectorAll('.fb-name');
+  var logo = dev.querySelector('.fb-logo');
+  var url = dev.querySelector('.fb-url');
+  var cards = dev.querySelectorAll('.fb-card');
+  var n = 0;
+  var timer = 0;
+
+  function show(i) {
+    var look = looks[i % looks.length];
+    dev.style.setProperty('--fb-accent', look[0]);
+    dev.style.setProperty('--fb-ink', look[1]);
+
+    Array.prototype.forEach.call(names, function (el) { el.textContent = look[2]; });
+    logo.textContent = look[2].charAt(0);
+    url.textContent = look[2].toLowerCase() + '.com';
+
+    // one, two or three feature cards, so parts keep dropping in and out
+    var count = 1 + (i % 3);
+    Array.prototype.forEach.call(cards, function (c, k) { c.classList.toggle('is-on', k < count); });
   }
 
-  var bar = document.createElement('div');
-  bar.className = 'draw-bar';
-
-  var toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'draw-toggle';
-  toggle.setAttribute('aria-pressed', 'false');
-  toggle.textContent = 'Connect the dots';
-
-  var clearBtn = document.createElement('button');
-  clearBtn.type = 'button';
-  clearBtn.className = 'draw-clear';
-  clearBtn.textContent = 'Clear';
-  clearBtn.hidden = true;
-
-  bar.appendChild(toggle);
-  bar.appendChild(clearBtn);
-  document.body.appendChild(bar);
-
-  function setDrawing(on) {
-    drawing = on;
-    current = null;
-    pen = null;
-    field.classList.toggle('is-drawing', on);
-    toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-    toggle.textContent = on ? 'Done' : 'Connect the dots';
-    queueInk();
+  function start() {
+    if (timer) return;
+    timer = window.setInterval(function () { show(++n); }, 2400);
   }
 
-  toggle.addEventListener('click', function () {
-    setDrawing(!drawing);
-  });
-
-  clearBtn.addEventListener('click', function () {
-    strokes = [];
-    current = null;
-    clearBtn.hidden = true;
-    queueInk();
-  });
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && drawing) setDrawing(false);
-  });
-
-  field.addEventListener('pointerdown', function (e) {
-    if (!drawing || e.button !== 0) return;
-    e.preventDefault();
-    field.setPointerCapture(e.pointerId);
-    pen = nodeAt(e.clientX, e.clientY);
-    current = [pen];
-    strokes.push(current);
-    clearBtn.hidden = false;
-    queueInk();
-  });
-
-  field.addEventListener('pointermove', function (e) {
-    if (!drawing) return;
-    pen = nodeAt(e.clientX, e.clientY);
-    if (current) extend(pen);
-    queueInk();
-  });
-
-  function endStroke() {
-    current = null;
+  function stop() {
+    window.clearInterval(timer);
+    timer = 0;
   }
 
-  field.addEventListener('pointerup', endStroke);
-  field.addEventListener('pointercancel', endStroke);
-  field.addEventListener('pointerleave', function () {
-    if (current) return;
-    pen = null;
-    queueInk();
-  });
+  show(0);
 
-  // The dots scroll with the page, so a drawing stays attached to the content it was drawn beside
-  function onScroll() {
-    field.style.backgroundPosition = '0 ' + -window.pageYOffset + 'px';
-    if (strokes.length) queueInk();
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries[0].isIntersecting ? start() : stop();
+    }, { threshold: 0.25 }).observe(dev);
+  } else {
+    start();
   }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', resize);
-  onScroll();
-  resize();
 })();
