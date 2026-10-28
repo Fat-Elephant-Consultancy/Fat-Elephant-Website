@@ -3283,3 +3283,97 @@ body.page-about .cta-banner {
   white-space: nowrap;
   border: 0;
 }
+
+/* ---------- Mobile polish: fewer moving parts, tighter spacing ---------- */
+
+.fb-signin {
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  /* Home: Fat Build panel */
+  .fb-panel {
+    gap: 22px;
+    padding: 34px 20px 26px;
+  }
+
+  .fb-steps,
+  .fb-chip {
+    display: none;
+  }
+
+  .fb-copy > p {
+    margin-bottom: 20px;
+  }
+
+  .fb-stage {
+    padding: 4px 0 8px;
+  }
+
+  /* Home: the desk */
+  .process {
+    padding: 44px 16px 36px;
+  }
+
+  .desk-board {
+    gap: 22px;
+    padding-top: 18px;
+  }
+
+  /* Services page: lighter cards */
+  .stack-card {
+    gap: 16px;
+    padding: 22px 20px 24px;
+  }
+
+  .stack-intro {
+    padding-bottom: 16px;
+    font-size: 1rem;
+  }
+
+  .stack-chips {
+    gap: 6px;
+  }
+
+  .stack-chips li {
+    padding: 5px 11px;
+    font-size: 0.8rem;
+  }
+
+  /* Footer: compact */
+  .site-footer {
+    padding: 44px 0 22px;
+  }
+
+  .footer-grid {
+    gap: 26px;
+    padding-bottom: 28px;
+  }
+
+  .footer-brand img {
+    margin-bottom: 12px;
+  }
+
+  .social-link {
+    margin-top: 14px;
+  }
+
+  .footer-col h4 {
+    margin-bottom: 12px;
+  }
+
+  .footer-col ul {
+    gap: 10px;
+  }
+
+  .footer-brand + .footer-col ul {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-top: 20px;
+  }
+}

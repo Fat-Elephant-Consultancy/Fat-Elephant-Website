@@ -1801,3 +1801,42 @@
     width: 250px;
   }
 }
+
+/* ================= Mobile polish ================= */
+
+@media (max-width: 560px) {
+  .page-build .page-header {
+    padding: 44px 0 20px;
+  }
+
+  .hud-chips {
+    display: none;
+  }
+
+  .builder-stage {
+    gap: 4px;
+    padding: 14px 14px 16px;
+  }
+
+  .stage-view {
+    min-height: 0;
+    padding: 12px 0 22px;
+  }
+
+  .dv-screen {
+    min-height: 250px;
+  }
+
+  .stats {
+    gap: 10px 14px;
+  }
+
+  .stat span {
+    margin-bottom: 4px;
+    font-size: 0.62rem;
+  }
+
+  .stat-track {
+    height: 6px;
+  }
+}
