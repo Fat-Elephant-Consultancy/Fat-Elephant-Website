@@ -82,31 +82,66 @@ if ('IntersectionObserver' in window && revealEls.length && !prefersReducedMotio
   });
 }
 
-// Contact form -> mailto handoff
+// Every form on the site sends to one Formspree form, which emails the message to us.
+// "source" says which form it came from.
+var FORMSPREE_URL = 'https://formspree.io/f/xpppdvbo';
+
+function sendToFormspree(fields) {
+  return fetch(FORMSPREE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(fields)
+  }).then(function (res) {
+    if (!res.ok) throw new Error('send failed');
+  });
+}
+
+// Contact form
 var contactForm = document.getElementById('contactForm');
 
 if (contactForm) {
+  var contactBtn = contactForm.querySelector('button[type="submit"]');
+  var contactNote = contactForm.querySelector('.form-note');
+  var contactDone = document.getElementById('contactDone');
+  var contactNoteText = contactNote.textContent;
+
   contactForm.addEventListener('submit', function (e) {
     e.preventDefault();
+
+    // the hidden field is only ever filled in by bots
+    if (contactForm.elements.website && contactForm.elements.website.value) return;
 
     var name = contactForm.name.value.trim();
     var email = contactForm.email.value.trim();
     var project = contactForm.project.value;
     var message = contactForm.message.value.trim();
 
-    var subject = 'New project inquiry: ' + project;
-    var body =
-      'Name: ' + name + '\n' +
-      'Email: ' + email + '\n' +
-      'Project type: ' + project + '\n\n' +
-      message;
+    contactBtn.disabled = true;
+    contactBtn.textContent = 'Sending...';
+    contactNote.className = 'form-note';
+    contactNote.textContent = contactNoteText;
 
-    var mailto =
-      'mailto:hello@fatelephant.co.in' +
-      '?subject=' + encodeURIComponent(subject) +
-      '&body=' + encodeURIComponent(body);
-
-    window.location.href = mailto;
+    sendToFormspree({
+      name: name,
+      email: email,
+      project: project,
+      message: message,
+      source: 'contact-page',
+      _subject: 'New project inquiry: ' + project
+    }).then(function () {
+      document.getElementById('contactDoneText').textContent =
+        "Thanks, " + name.split(' ')[0] + ". We've got it and we'll write back to " + email + '.';
+      contactForm.classList.add('is-sent');
+      contactDone.hidden = false;
+      contactForm.reset();
+      contactBtn.disabled = false;
+      contactBtn.textContent = 'Send Message';
+    }).catch(function () {
+      contactBtn.disabled = false;
+      contactBtn.textContent = 'Send Message';
+      contactNote.className = 'form-note is-error';
+      contactNote.textContent = "That didn't go through. Please try again, or email hello@fatelephant.co.in.";
+    });
   });
 }
 
@@ -584,57 +619,29 @@ if (canHover && !prefersReducedMotion) {
 
     // Step two: an email address is required before anything is shipped
     var deliver = function (email) {
-      var lines = [
-        'Hi Fat Elephant,',
-        '',
-        'Here is my answer from your website.',
-        '',
-        "What's holding your idea back? " + (pending.answer || '(no answer picked)')
-      ];
-      if (pending.note) lines.push('', 'Note: ' + pending.note);
-      lines.push('', 'Reply to: ' + email);
-
-      // an online form service can be wired in by setting data-endpoint on the dialog
-      var endpoint = (dialog.getAttribute('data-endpoint') || '').trim();
-
-      if (endpoint) {
-        return fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({
-            email: email,
-            answer: pending.answer,
-            note: pending.note,
-            source: 'home-desk'
-          })
-        }).then(function (res) {
-          if (!res.ok) throw new Error('send failed');
-          return 'online';
-        });
-      }
-
-      window.location.href = 'mailto:hello@fatelephant.co.in' +
-        '?subject=' + encodeURIComponent('Feedback from the website') +
-        '&body=' + encodeURIComponent(lines.join('\n'));
-      return Promise.resolve('email');
+      return sendToFormspree({
+        email: email,
+        answer: pending.answer,
+        note: pending.note,
+        source: 'home-desk',
+        _subject: 'Feedback from the website'
+      });
     };
 
-    var celebrate = function (mode, email) {
-      var online = mode === 'online';
-      document.getElementById('shipDoneTitle').textContent = online ? 'Shipped.' : 'Nearly there.';
-      document.getElementById('shipDoneText').textContent = online
-        ? "We've got your note and we'll write back to " + email + '.'
-        : "Your email app is opening with your note ready. Press send and it's with us.";
+    var celebrate = function (email) {
+      document.getElementById('shipDoneTitle').textContent = 'Shipped.';
+      document.getElementById('shipDoneText').textContent =
+        "We've got your note and we'll write back to " + email + '.';
 
       shipForm.hidden = true;
       shipDone.hidden = false;
 
       window.setTimeout(function () {
         if (dialog.open) dialog.close();
-        shipped(true, online ? 'Shipped!' : 'Ready!');
+        shipped(true, 'Shipped!');
         form.reset();
         pending = null;
-      }, online ? 2200 : 3200);
+      }, 2200);
     };
 
     shipForm.addEventListener('submit', function (e) {
@@ -657,8 +664,8 @@ if (canHover && !prefersReducedMotion) {
       shipGo.disabled = true;
       shipGo.textContent = 'Shipping...';
 
-      deliver(email).then(function (mode) {
-        celebrate(mode, email);
+      deliver(email).then(function () {
+        celebrate(email);
       }).catch(function () {
         shipGo.disabled = false;
         shipGo.textContent = 'Think Fat';

@@ -576,37 +576,63 @@
     family = 'brand';
     el.name.value = '';
     document.getElementById('yourName').value = '';
+    document.getElementById('yourEmail').value = '';
     document.getElementById('yourNotes').value = '';
+    pane4.classList.remove('is-sent');
+    buildDone.hidden = true;
+    sendError.textContent = '';
     render({ swap: true });
     showStep(0);
   });
 
-  // ---- send the build as an email ----
+  // ---- send the build to us ----
+  var sendError = document.getElementById('buildError');
+  var buildDone = document.getElementById('buildDone');
+  var pane4 = document.querySelector('[data-pane="3"]');
+
   el.send.addEventListener('click', function () {
     var feats = featureList().map(function (k) { return FEATURES[k].label; });
     var who = document.getElementById('yourName').value.trim();
+    var email = document.getElementById('yourEmail').value.trim();
     var notes = document.getElementById('yourNotes').value.trim();
 
-    var body = [
-      'Hi Fat Elephant,',
-      '',
-      'I built this with Fat Build on your website:',
-      '',
-      'Product name: ' + displayName(),
-      'Type: ' + TYPES[state.type].label,
-      'Colour: ' + state.colour.name + ' (' + state.colour.hex.toUpperCase() + ')',
-      'Backdrop: ' + BACKDROPS[state.backdrop],
-      'Style: ' + STYLES[state.style],
-      'Features: ' + (feats.length ? feats.join(', ') : 'None yet'),
-      'Size: ' + scopeLabel(feats.length),
-      ''
-    ];
-    if (notes) body.push('Notes: ' + notes, '');
-    body.push(who ? 'Thanks, ' + who : 'Thanks');
+    // the hidden field is only ever filled in by bots
+    if (document.getElementById('buildHp').value) return;
 
-    window.location.href = 'mailto:hello@fatelephant.co.in' +
-      '?subject=' + encodeURIComponent('Fat Build: ' + displayName()) +
-      '&body=' + encodeURIComponent(body.join('\n'));
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      sendError.textContent = 'Please add your email so we can reply.';
+      document.getElementById('yourEmail').focus();
+      return;
+    }
+
+    sendError.textContent = '';
+    el.send.disabled = true;
+    el.send.textContent = 'Sending...';
+
+    sendToFormspree({
+      email: email,
+      name: who,
+      product: displayName(),
+      type: TYPES[state.type].label,
+      colour: state.colour.name + ' (' + state.colour.hex.toUpperCase() + ')',
+      backdrop: BACKDROPS[state.backdrop],
+      style: STYLES[state.style],
+      features: feats.length ? feats.join(', ') : 'None yet',
+      size: scopeLabel(feats.length),
+      notes: notes,
+      source: 'fat-build',
+      _subject: 'Fat Build: ' + displayName()
+    }).then(function () {
+      document.getElementById('buildDoneText').textContent =
+        "We've got your build and we'll write back to " + email + '.';
+      pane4.classList.add('is-sent');
+      buildDone.hidden = false;
+    }).catch(function () {
+      sendError.textContent = "That didn't go through. Please try again, or email hello@fatelephant.co.in.";
+    }).then(function () {
+      el.send.disabled = false;
+      el.send.textContent = 'Send this build to Fat Elephant';
+    });
   });
 
   // ---- the stage tilts towards the cursor ----

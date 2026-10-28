@@ -1840,3 +1840,22 @@
     height: 6px;
   }
 }
+
+/* ---- sending the build ---- */
+
+.builder-error {
+  min-height: 1.3em;
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #b3401f;
+}
+
+.pane.is-sent > :not(.build-done):not(h2) {
+  display: none;
+}
+
+.build-done {
+  padding: 8px 0 4px;
+}
+/* Build sent: see .build-done */

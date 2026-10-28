@@ -290,11 +290,25 @@
             <input type="text" id="yourName" autocomplete="name">
           </div>
           <div class="field">
+            <label for="yourEmail">Your email</label>
+            <input type="email" id="yourEmail" autocomplete="email" placeholder="you@company.com">
+          </div>
+          <div class="field">
             <label for="yourNotes">Anything else we should know? <small>(optional)</small></label>
             <textarea id="yourNotes" rows="3" placeholder="Who is it for? What problem does it solve?"></textarea>
           </div>
+          <input type="text" name="website" class="ship-hp" id="buildHp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <p class="builder-error" id="buildError" role="alert"></p>
           <button type="button" class="btn btn-primary builder-send" id="sendBuild">Send this build to Fat Elephant</button>
-          <p class="builder-fine">This opens your email app with the build filled in, addressed to hello@fatelephant.co.in. Nothing is sent until you press send there.</p>
+          <p class="builder-fine">Your build goes straight to our inbox, and we'll reply to the email you give. See our <a href="privacy.html">Privacy Policy</a>.</p>
+
+          <div class="ship-done build-done" id="buildDone" hidden>
+            <div class="ship-check">
+              <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false"><circle class="ship-ring" cx="40" cy="40" r="30"/><path class="ship-tick" d="M27 41l9 9 18-20"/></svg>
+            </div>
+            <h2>Build sent.</h2>
+            <p id="buildDoneText" role="status"></p>
+          </div>
         </div>
 
         <div class="panel-nav">

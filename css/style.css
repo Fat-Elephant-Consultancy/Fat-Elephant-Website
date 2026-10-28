@@ -2115,6 +2115,27 @@ article.stack-card:last-of-type {
   }
 }
 
+/* Contact form success: reuses the pop-up's tick and glow */
+.form-card.is-sent > :not(.contact-done) {
+  display: none;
+}
+
+.contact-done h2,
+.build-done h2 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  color: var(--teal-darkest);
+}
+
+.contact-done {
+  padding: 32px 12px;
+}
+
+.form-note.is-error {
+  color: #b3401f;
+  font-weight: 700;
+}
+
 /* ---------- Ship dialog (email pop-up) ---------- */
 
 .ship-dialog {
