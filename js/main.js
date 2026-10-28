@@ -102,7 +102,7 @@ if (contactForm) {
       message;
 
     var mailto =
-      'mailto:trunklink@fatelephant.co.in' +
+      'mailto:hello@fatelephant.co.in' +
       '?subject=' + encodeURIComponent(subject) +
       '&body=' + encodeURIComponent(body);
 
@@ -613,7 +613,7 @@ if (canHover && !prefersReducedMotion) {
         });
       }
 
-      window.location.href = 'mailto:trunklink@fatelephant.co.in' +
+      window.location.href = 'mailto:hello@fatelephant.co.in' +
         '?subject=' + encodeURIComponent('Feedback from the website') +
         '&body=' + encodeURIComponent(lines.join('\n'));
       return Promise.resolve('email');
@@ -662,7 +662,7 @@ if (canHover && !prefersReducedMotion) {
       }).catch(function () {
         shipGo.disabled = false;
         shipGo.textContent = 'Think Fat';
-        shipError.textContent = "That didn't go through. Please try again, or email trunklink@fatelephant.co.in.";
+        shipError.textContent = "That didn't go through. Please try again, or email hello@fatelephant.co.in.";
       });
     });
 

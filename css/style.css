@@ -3113,6 +3113,17 @@ body.page-about .cta-banner {
   height: 20px;
 }
 
+/* Instagram and LinkedIn sit side by side in the footer */
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.footer-social .social-link {
+  margin-top: 0;
+}
+
 .social-link:hover {
   transform: translateY(-3px) scale(1.06);
   background: var(--lime);
@@ -3354,7 +3365,7 @@ body.page-about .cta-banner {
     margin-bottom: 12px;
   }
 
-  .social-link {
+  .footer-social {
     margin-top: 14px;
   }
 

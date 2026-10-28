@@ -604,7 +604,7 @@
     if (notes) body.push('Notes: ' + notes, '');
     body.push(who ? 'Thanks, ' + who : 'Thanks');
 
-    window.location.href = 'mailto:trunklink@fatelephant.co.in' +
+    window.location.href = 'mailto:hello@fatelephant.co.in' +
       '?subject=' + encodeURIComponent('Fat Build: ' + displayName()) +
       '&body=' + encodeURIComponent(body.join('\n'));
   });
