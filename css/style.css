@@ -606,32 +606,37 @@ section {
 
 .trusted-by .container {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
+  text-align: center;
 }
 
+/* "Our Clients" sits in a pill, like the other section labels */
 .trusted-by-label {
+  padding: 8px 18px;
+  border-radius: 999px;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--teal);
+  background: var(--mint);
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .trusted-by-logos {
-  flex: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 56px;
   min-width: 0;
 }
 
-.trusted-by-logos a {
+.trusted-by-logos a,
+.trusted-by-logos .client {
   display: inline-flex;
   align-items: center;
 }
@@ -648,6 +653,21 @@ section {
 
 .trusted-by-logos img.is-wisdomx {
   height: 44px;
+}
+
+/* Tall, portrait logo: needs more height to stay readable */
+.trusted-by-logos img.is-gandhi {
+  height: 86px;
+}
+
+@media (max-width: 640px) {
+  .trusted-by .trusted-by-logos {
+    gap: 20px 22px;
+  }
+
+  .trusted-by-logos img.is-gandhi {
+    height: 76px;
+  }
 }
 
 .trusted-by-logos img:hover {
@@ -672,18 +692,6 @@ section {
 @media (prefers-reduced-motion: reduce) {
   .trusted-by-logos img {
     animation: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .trusted-by .container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .trusted-by-logos {
-    gap: 36px;
   }
 }
 
