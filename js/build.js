@@ -148,6 +148,8 @@
 
   var state = freshState();
   var step = 0;
+  var STEP_NAMES = ['product', 'look', 'features', 'launch'];
+  var started = false;
   var family = 'brand';
 
   var el = {
@@ -518,6 +520,14 @@
     });
     el.back.disabled = step === 0;
     el.next.hidden = step === el.panes.length - 1;
+    if (window.feTrack && started) window.feTrack('fatbuild_step', { step_name: STEP_NAMES[step] });
+  }
+
+  // fatbuild_start fires once, on the first choice the visitor makes
+  function markStarted() {
+    if (started) return;
+    started = true;
+    if (window.feTrack) window.feTrack('fatbuild_start');
   }
 
   Array.prototype.forEach.call(el.steps, function (b) {
@@ -528,6 +538,7 @@
 
   // ---- choices ----
   document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-group], [data-feature-opt], .sw, .ptab')) markStarted();
     var opt = e.target.closest('[data-group]');
     if (opt) {
       var group = opt.getAttribute('data-group');
@@ -549,6 +560,7 @@
   });
 
   el.name.addEventListener('input', function () {
+    markStarted();
     state.name = el.name.value;
     render();
   });
@@ -625,6 +637,7 @@
     }).then(function () {
       document.getElementById('buildDoneText').textContent =
         "We've got your build and we'll write back to " + email + '.';
+      if (window.feTrack) window.feTrack('fatbuild_submit', { product_type: state.type, features: feats.length });
       pane4.classList.add('is-sent');
       buildDone.hidden = false;
     }).catch(function () {

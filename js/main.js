@@ -103,7 +103,7 @@ if (contactForm) {
   var contactBtn = contactForm.querySelector('button[type="submit"]');
   var contactNote = contactForm.querySelector('.form-note');
   var contactDone = document.getElementById('contactDone');
-  var contactNoteText = contactNote.textContent;
+  var contactNoteHtml = contactNote.innerHTML;
 
   contactForm.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -119,7 +119,7 @@ if (contactForm) {
     contactBtn.disabled = true;
     contactBtn.textContent = 'Sending...';
     contactNote.className = 'form-note';
-    contactNote.textContent = contactNoteText;
+    contactNote.innerHTML = contactNoteHtml;
 
     sendToFormspree({
       name: name,
@@ -131,6 +131,7 @@ if (contactForm) {
     }).then(function () {
       document.getElementById('contactDoneText').textContent =
         "Thanks, " + name.split(' ')[0] + ". We've got it and we'll write back to " + email + '.';
+      if (window.feTrack) window.feTrack('contact_submit', { project: project });
       contactForm.classList.add('is-sent');
       contactDone.hidden = false;
       contactForm.reset();
@@ -611,6 +612,7 @@ if (canHover && !prefersReducedMotion) {
       status.className = 'ask-status';
       status.textContent = '';
       pending = { answer: picked ? picked.value : '', note: note };
+      if (window.feTrack && picked) window.feTrack('quiz_answer', { answer: picked.value });
 
       resetDialog();
       dialog.showModal();
@@ -629,6 +631,7 @@ if (canHover && !prefersReducedMotion) {
     };
 
     var celebrate = function (email) {
+      if (window.feTrack) window.feTrack('email_signup', { source: 'home-desk' });
       document.getElementById('shipDoneTitle').textContent = 'Shipped.';
       document.getElementById('shipDoneText').textContent =
         "We've got your note and we'll write back to " + email + '.';
