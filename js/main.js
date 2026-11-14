@@ -124,7 +124,12 @@ if (contactForm) {
     var attachText = attach.querySelector('span');
     var attachName = document.createElement('strong');
     attachName.textContent = savedBuild.product;
-    attachText.appendChild(document.createTextNode('Include the product you sketched in Fat Build: '));
+    var attachBrand = document.createElement('span');
+    attachBrand.className = 'fat-build';
+    attachBrand.textContent = 'Fat Build';
+    attachText.appendChild(document.createTextNode('Include the product you sketched in '));
+    attachText.appendChild(attachBrand);
+    attachText.appendChild(document.createTextNode(': '));
     attachText.appendChild(attachName);
     attachText.appendChild(document.createTextNode(' (' + savedBuild.type + ', ' + savedBuild.count + (savedBuild.count === 1 ? ' feature' : ' features') + ').'));
     contactForm.querySelector('textarea').closest('.field').insertAdjacentElement('afterend', attach);

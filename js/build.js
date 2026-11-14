@@ -153,17 +153,26 @@
   var family = 'brand';
 
   var el = {
-    name: document.getElementById('productName'),
     names: device.querySelectorAll('[data-name]'),
-    logo: document.getElementById('pvLogo'),
+    initials: device.querySelectorAll('[data-initial]'),
+    domains: device.querySelectorAll('[data-domain]'),
+    taglines: device.querySelectorAll('[data-tagline]'),
+    ctas: device.querySelectorAll('[data-cta]'),
     url: document.getElementById('pvUrl'),
-    tagline: document.getElementById('pvTagline'),
-    cta: document.getElementById('pvCta'),
+    scroller: document.getElementById('pvScroll'),
     chips: document.getElementById('hudChips'),
     count: document.getElementById('featureCount'),
     total: document.getElementById('featureTotal'),
     live: document.getElementById('liveSummary'),
     steps: document.querySelectorAll('.step'),
+    stepLinks: document.querySelectorAll('[data-step]'),
+    accs: document.querySelectorAll('.acc'),
+    panel: document.getElementById('panel'),
+    studioName: document.getElementById('studioName'),
+    studioSend: document.getElementById('studioSend'),
+    toast: document.getElementById('studioToast'),
+    zoomVal: document.getElementById('zoomVal'),
+    navBack: document.querySelectorAll('[data-nav="back"]'),
     panes: document.querySelectorAll('.pane'),
     back: document.getElementById('back'),
     next: document.getElementById('next'),
@@ -221,7 +230,7 @@
     return 'Ambitious';
   }
 
-  // Dark ink on light colours, light ink on dark colours
+  // Whichever of the dark or light ink reads better on the colour
   function inkFor(hex) {
     var c = hex.replace('#', '');
     var ch = [0, 2, 4].map(function (i) {
@@ -229,7 +238,11 @@
       return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
     });
     var lum = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
-    return lum > 0.4 ? '#06231d' : '#fffdee';
+    var DARK = 0.0133; // luminance of #06231d
+    var LIGHT = 0.9768; // luminance of #fffdee
+    var withDark = (lum + 0.05) / (DARK + 0.05);
+    var withLight = (LIGHT + 0.05) / (lum + 0.05);
+    return withDark >= withLight ? '#06231d' : '#fffdee';
   }
 
   function stats() {
@@ -428,6 +441,15 @@
   });
 
   // ---- render everything ----
+  var rendered = false;
+
+  function revealInPreview(m) {
+    var box = el.scroller;
+    var top = m.getAttribute('data-feature') === 'search' ? 0 : Math.max(0, m.offsetTop - 10);
+    var end = box.scrollHeight - box.clientHeight;
+    box.scrollTo({ top: Math.min(top, end), behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+
   function render(opts) {
     var t = TYPES[state.type];
     var feats = featureList();
@@ -440,22 +462,32 @@
     device.style.setProperty('--pv-accent-ink', inkFor(state.colour.hex));
 
     Array.prototype.forEach.call(el.names, function (n) { n.textContent = displayName(); });
-    el.logo.textContent = displayName().charAt(0).toUpperCase();
+    Array.prototype.forEach.call(el.initials, function (n) { n.textContent = displayName().charAt(0).toUpperCase(); });
+    Array.prototype.forEach.call(el.domains, function (n) { n.textContent = slug(); });
+    Array.prototype.forEach.call(el.taglines, function (n) { n.textContent = t.tagline; });
+    Array.prototype.forEach.call(el.ctas, function (n) { n.textContent = t.cta; });
     el.url.textContent = slug();
-    el.tagline.textContent = t.tagline;
-    el.cta.textContent = t.cta;
 
+    var added = null;
     Object.keys(FEATURES).forEach(function (k) {
       Array.prototype.forEach.call(device.querySelectorAll('[data-feature="' + k + '"]'), function (m) {
         var on = !!state.features[k];
-        if (on && !m.classList.contains('is-on') && !reduceMotion) {
-          m.classList.remove('is-popping');
-          void m.offsetWidth;
-          m.classList.add('is-popping');
+        if (on && !m.classList.contains('is-on')) {
+          added = m;
+          if (!reduceMotion) {
+            m.classList.remove('is-popping');
+            void m.offsetWidth;
+            m.classList.add('is-popping');
+          }
         }
         m.classList.toggle('is-on', on);
       });
     });
+
+    // the preview is a window onto a longer page, so bring a newly added screen into view
+    if (opts && opts.swap) el.scroller.scrollTop = 0;
+    else if (added && rendered && el.scroller.contains(added)) revealInPreview(added);
+    rendered = true;
 
     // option buttons
     Array.prototype.forEach.call(document.querySelectorAll('[data-group]'), function (b) {
@@ -507,6 +539,13 @@
 
     el.live.textContent = displayName() + ', ' + t.label + ', ' + lookText + ', ' + feats.length + ' features on.';
 
+    // panel subtitles, and the two name fields, stay in step with the build
+    document.getElementById('accSub0').textContent = t.label;
+    document.getElementById('accSub1').textContent = state.colour.name + ', ' + BACKDROPS[state.backdrop].toLowerCase() + ', ' + STYLES[state.style].toLowerCase();
+    document.getElementById('accSub2').textContent = feats.length + ' of ' + availableKeys().length + ' on';
+    document.getElementById('accSub3').textContent = 'Review and send';
+    if (document.activeElement !== el.studioName) el.studioName.value = state.name;
+
     if (opts && opts.swap) swapAnimation();
     fitStage();
     rememberBuild();
@@ -522,9 +561,37 @@
       if (i === step) b.setAttribute('aria-current', 'step');
       else b.removeAttribute('aria-current');
     });
+    Array.prototype.forEach.call(el.accs, function (a, i) {
+      a.classList.toggle('is-open', i === step);
+      a.querySelector('.acc-head').setAttribute('aria-expanded', i === step ? 'true' : 'false');
+    });
     el.back.disabled = step === 0;
+    Array.prototype.forEach.call(el.navBack, function (b) { b.disabled = step === 0; });
     el.next.hidden = step === el.panes.length - 1;
+    revealOpenCard();
+    if (stepsReady) bringPanelIntoView();
     if (window.feTrack && started) window.feTrack('fatbuild_step', { step_name: STEP_NAMES[step] });
+  }
+
+  // On small screens the options sit below the pinned preview. After the visitor changes step,
+  // bring the top of them back into view, just under the preview.
+  var stepsReady = false;
+
+  function bringPanelIntoView() {
+    if (!compact.matches || !el.panel) return;
+    var stage = document.getElementById('stage');
+    var pinned = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64) + stage.offsetHeight + 12;
+    var top = el.panel.getBoundingClientRect().top;
+    if (top < pinned || top > window.innerHeight * 0.85) {
+      window.scrollTo({ top: window.scrollY + top - pinned, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  }
+
+  // keep the open card in view when the panel is taller than the canvas
+  function revealOpenCard() {
+    var open = el.accs[step];
+    if (!open || !el.panel || el.panel.scrollHeight <= el.panel.clientHeight + 1) return;
+    el.panel.scrollTo({ top: Math.max(0, open.offsetTop - 12), behavior: reduceMotion ? 'auto' : 'smooth' });
   }
 
   // fatbuild_start fires once, on the first choice the visitor makes
@@ -534,10 +601,13 @@
     if (window.feTrack) window.feTrack('fatbuild_start');
   }
 
-  Array.prototype.forEach.call(el.steps, function (b) {
+  Array.prototype.forEach.call(el.stepLinks, function (b) {
     b.addEventListener('click', function () { showStep(parseInt(b.getAttribute('data-step'), 10)); });
   });
   el.back.addEventListener('click', function () { showStep(step - 1); });
+  Array.prototype.forEach.call(el.navBack, function (b) {
+    b.addEventListener('click', function () { showStep(step - 1); });
+  });
   el.next.addEventListener('click', function () { showStep(step + 1); });
 
   // ---- choices ----
@@ -563,9 +633,10 @@
     }
   });
 
-  el.name.addEventListener('input', function () {
+  // the product name is typed in the toolbar
+  el.studioName.addEventListener('input', function () {
     markStarted();
-    state.name = el.name.value;
+    state.name = el.studioName.value;
     render();
   });
 
@@ -590,7 +661,8 @@
   el.reset.addEventListener('click', function () {
     state = freshState();
     family = 'brand';
-    el.name.value = '';
+    el.studioName.value = '';
+    zoom = 1;
     document.getElementById('yourName').value = '';
     document.getElementById('yourEmail').value = '';
     document.getElementById('yourNotes').value = '';
@@ -612,8 +684,13 @@
 
   function say(text) {
     shareNote.textContent = text;
+    el.toast.textContent = text;
+    el.toast.classList.add('is-on');
     clearTimeout(noteTimer);
-    noteTimer = setTimeout(function () { shareNote.textContent = ''; }, 4000);
+    noteTimer = setTimeout(function () {
+      shareNote.textContent = '';
+      el.toast.classList.remove('is-on');
+    }, 4000);
   }
 
   function shareUrl() {
@@ -654,7 +731,7 @@
 
     state = s;
     pruneFeatures();
-    el.name.value = state.name;
+    el.studioName.value = state.name;
     return true;
   }
 
@@ -771,9 +848,9 @@
     var lx = 70;
     var lw = 650;
     ctx.fillStyle = ink;
-    ctx.font = '700 20px Sora, sans-serif';
-    ctx.globalAlpha = 0.7;
-    ctx.fillText('FAT BUILD', lx + 34, 84);
+    ctx.font = '700 38px "Amatic SC", Sora, sans-serif'; // the hand-lettered capitals of the logo's FAT
+    ctx.globalAlpha = 0.8;
+    ctx.fillText('FAT BUILD', lx + 34, 86);
     ctx.globalAlpha = 1;
     ctx.fillStyle = accent;
     ctx.beginPath();
@@ -852,25 +929,35 @@
 
     ctx.fillStyle = ink;
     ctx.globalAlpha = 0.7;
+    var lead = 'Sketched with ';
+    var brand = 'FAT BUILD';
     ctx.font = '700 20px Sora, sans-serif';
-    ctx.fillText('Sketched with Fat Build at fatelephant.co.in/build', lx, 585);
+    ctx.fillText(lead, lx, 585);
+    var bx = lx + ctx.measureText(lead).width;
+    ctx.font = '700 32px "Amatic SC", Sora, sans-serif';
+    ctx.fillText(brand, bx, 585);
+    var tx = bx + ctx.measureText(brand).width;
+    ctx.font = '700 20px Sora, sans-serif';
+    ctx.fillText(' at fatelephant.co.in/build', tx, 585);
     ctx.globalAlpha = 1;
     return cv;
   }
 
   function saveImage() {
-    var btn = el.saveImage;
-    btn.disabled = true;
+    var btns = document.querySelectorAll('[data-action="save-image"]');
+    var setBusy = function (busy) { Array.prototype.forEach.call(btns, function (b) { b.disabled = busy; }); };
+    setBusy(true);
     var fonts = document.fonts && document.fonts.load ? Promise.all([
       document.fonts.load('800 60px Sora'),
       document.fonts.load('700 20px Sora'),
+      document.fonts.load('700 32px "Amatic SC"'),
       document.fonts.load('600 28px Manrope'),
       document.fonts.load('700 18px Manrope')
     ]) : Promise.resolve();
 
     fonts.catch(function () { /* draw with whatever fonts are there */ }).then(function () {
       drawCard().toBlob(function (blob) {
-        btn.disabled = false;
+        setBusy(false);
         if (!blob) { say('Could not make the image on this device.'); return; }
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -885,8 +972,39 @@
     });
   }
 
-  el.copyLink.addEventListener('click', copyLink);
-  el.saveImage.addEventListener('click', saveImage);
+  // the toolbar and the Launch card both offer these two
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-action]');
+    if (!b) return;
+    var what = b.getAttribute('data-action');
+    if (what === 'copy-link') copyLink();
+    else if (what === 'save-image') saveImage();
+  });
+
+  // "Send build" in the toolbar goes to the Launch card, ready for an email address
+  el.studioSend.addEventListener('click', function () {
+    if (step === 3 && !pane4.classList.contains('is-sent')) {
+      el.send.click();
+      return;
+    }
+    showStep(3);
+    window.setTimeout(function () {
+      var email = document.getElementById('yourEmail');
+      if (email) email.focus({ preventScroll: true });
+    }, reduceMotion ? 0 : 350);
+  });
+
+  // zoom the preview on the canvas
+  var zoom = 1;
+  document.addEventListener('click', function (e) {
+    var z = e.target.closest('[data-zoom]');
+    if (!z) return;
+    var how = z.getAttribute('data-zoom');
+    if (how === 'in') zoom = Math.min(1.3, +(zoom + 0.1).toFixed(2));
+    else if (how === 'out') zoom = Math.max(0.6, +(zoom - 0.1).toFixed(2));
+    else zoom = 1;
+    fitStage();
+  });
 
   // ---- remember the build in this browser, so the Contact page can offer to attach it ----
   var BUILD_KEY = 'fe_build';
@@ -1001,15 +1119,24 @@
     if (navbar) document.documentElement.style.setProperty('--nav-h', navbar.offsetHeight + 'px');
 
     if (!compact.matches) {
-      device.style.scale = '';
+      // desktop: fit the preview to the free space between the tool cards, then apply the zoom
       stageFloat.style.height = '';
+      device.style.scale = '1';
+      var box = el.stageView;
+      var cs = getComputedStyle(box);
+      var availW = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      var availH = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var fit = Math.min(1, availW / device.offsetWidth, availH / device.offsetHeight);
+      if (!isFinite(fit) || fit <= 0) fit = 1;
+      device.style.scale = (fit * zoom).toFixed(3);
+      el.zoomVal.textContent = Math.round(zoom * 100) + '%';
       return;
     }
 
     device.style.scale = '1';
     stageFloat.style.height = '';
     var natural = device.offsetHeight;
-    var room = Math.min(220, window.innerHeight * 0.28);
+    var room = Math.min(window.innerWidth >= 600 ? 330 : 220, window.innerHeight * 0.3);
     // never shrink below a readable size: a very tall preview is cropped to the pinned frame instead
     var k = Math.max(0.4, Math.min(1, room / natural));
     device.style.scale = k.toFixed(3);
@@ -1024,4 +1151,5 @@
   var shared = loadFromAddress();
   render();
   showStep(shared ? 3 : 0);
+  stepsReady = true;
 })();

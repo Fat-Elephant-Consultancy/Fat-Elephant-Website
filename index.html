@@ -82,7 +82,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -97,7 +97,7 @@
       <ul class="nav-dropdown" id="navDropdown">
         <li><a href="/" class="active">Home</a></li>
         <li><a href="/services">Services</a></li>
-        <li><a href="/build">Fat Build</a></li>
+        <li><a href="/build"><span class="fat-build">Fat Build</span></a></li>
         <li><a href="/about">About</a></li>
         <li><a href="/contact">Contact</a></li>
       </ul>
@@ -129,16 +129,19 @@
   <div class="container">
     <div class="hero-copy">
       <span class="eyebrow">Product &amp; Technology Studio</span>
-      <p class="doodle-title">
+      <h1 class="doodle-title">
         <span class="sr-only">Think Big. Think Fat.</span>
         <span class="dt-line" aria-hidden="true"><span class="coco-regular">Think</span> <span class="coco-bold"><span class="dt-letter" data-doodle data-v="2" data-char="B">B</span><span class="dt-letter" data-doodle data-v="3" data-char="i">i</span><span class="dt-letter" data-doodle data-v="1" data-char="g">g</span><span class="dt-dot" data-doodle data-v="2"><svg viewBox="0 0 24 24" focusable="false"><rect class="d0" x="4" y="4" width="16" height="16"/><g class="d1"><rect x="4" y="4" width="16" height="16"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></g><path class="d2" d="M10.5 12a1.3 1.3 0 0 1 2.6 0a3.9 3.9 0 0 1-7.8 0a6.5 6.5 0 0 1 13 0"/><circle class="d3" cx="12" cy="12" r="8"/></svg></span></span></span>
         <span class="dt-line" aria-hidden="true"><span class="coco-regular">Think</span> <span class="coco-bold"><span class="dt-letter" data-doodle data-v="1" data-char="F">F</span><span class="dt-letter" data-doodle data-v="3" data-char="a">a</span><span class="dt-letter" data-doodle data-v="2" data-char="t">t</span><span class="dt-dot" data-doodle data-v="1"><svg viewBox="0 0 24 24" focusable="false"><rect class="d0" x="4" y="4" width="16" height="16"/><g class="d1"><rect x="4" y="4" width="16" height="16"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></g><path class="d2" d="M10.5 12a1.3 1.3 0 0 1 2.6 0a3.9 3.9 0 0 1-7.8 0a6.5 6.5 0 0 1 13 0"/><circle class="d3" cx="12" cy="12" r="8"/></svg></span></span></span>
-      </p>
-      <h1 class="hero-h1">A product studio in Chennai that takes ideas from first sketch to shipped product.</h1>
+      </h1>
       <p class="hero-lede">At Fat Elephant, we help ambitious founders and bold companies turn messy ideas into products people actually love. No endless decks. No corporate theatre.</p>
       <div class="hero-actions">
-        <a href="/contact" class="btn btn-primary">Start a Project</a>
-        <a href="/services" class="btn btn-outline">Explore Our Services</a>
+        <a href="/build" class="hero-build">
+          <span class="hero-build-tag">New</span>
+          <span class="hero-build-text"><strong><span class="fat-build">Fat Build</span>:</strong> sketch your product in a minute, then send it to us.</span>
+          <span class="hero-build-arrow" aria-hidden="true">&rarr;</span>
+        </a>
+        <a href="/services" class="hero-explore">Explore our services <span aria-hidden="true">&rarr;</span></a>
       </div>
     </div>
   </div>
@@ -252,7 +255,7 @@
   <div class="container">
     <div class="fb-panel reveal">
       <div class="fb-copy">
-        <span class="fb-eyebrow"><b>New</b> Fat Build</span>
+        <span class="fb-eyebrow"><b>New</b> <span class="fat-build">Fat Build</span></span>
         <h2>Don't just describe your idea. <span class="fb-hl">Build it.</span></h2>
         <p>Pick a product type, choose your colours and switch on the features you want. Watch it take shape in seconds, then send it to us as your brief.</p>
         <ol class="fb-steps">
@@ -261,7 +264,7 @@
           <li><b>3</b>Switch on features</li>
         </ol>
         <div class="fb-actions">
-          <a href="/build" class="btn btn-primary">Try Fat Build</a>
+          <a href="/build" class="btn btn-primary">Try <span class="fat-build">Fat Build</span></a>
           <span class="fb-note">No sign-up. Takes about a minute.</span>
         </div>
       </div>
@@ -401,7 +404,7 @@
         <ul>
           <li><a href="/">Home</a></li>
           <li><a href="/services">Services</a></li>
-          <li><a href="/build">Fat Build</a></li>
+          <li><a href="/build"><span class="fat-build">Fat Build</span></a></li>
           <li><a href="/about">About</a></li>
           <li><a href="/contact">Contact</a></li>
         </ul>

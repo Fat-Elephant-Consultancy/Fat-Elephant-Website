@@ -23,9 +23,11 @@
 <link rel="manifest" href="/site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/build.css">
+<link rel="stylesheet" href="/css/build-preview.css">
+<link rel="stylesheet" href="/css/build-studio.css">
 </head>
 <body class="page-build">
 
@@ -39,7 +41,7 @@
       <ul class="nav-dropdown" id="navDropdown">
         <li><a href="/">Home</a></li>
         <li><a href="/services">Services</a></li>
-        <li><a href="/build" class="active">Fat Build</a></li>
+        <li><a href="/build" class="active"><span class="fat-build">Fat Build</span></a></li>
         <li><a href="/about">About</a></li>
         <li><a href="/contact">Contact</a></li>
       </ul>
@@ -61,147 +63,430 @@
 
 <div class="page-header">
   <div class="container">
-    <span class="eyebrow">Fat Build</span>
+    <span class="eyebrow"><span class="fat-build">Fat Build</span></span>
     <h1>Pick the parts. <span class="build-mark">Watch it come alive.</span></h1>
     <p>Choose what you're making, give it a look, switch on the features. Your product builds itself on the stage, and when you like what you see, send it to us.</p>
   </div>
 </div>
 
 <section class="builder" id="builder">
-  <div class="container">
+  <div class="container container--studio">
     <noscript><p class="builder-noscript">The builder needs JavaScript. You can still <a href="/contact">tell us about your product</a> the classic way.</p></noscript>
 
-    <div class="builder-grid">
+    <div class="studio" id="studio">
 
-      <!-- ============ STAGE ============ -->
-      <div class="builder-stage" id="stage">
-        <div class="stage-hud">
+      <!-- ============ TOOLBAR ============ -->
+      <header class="studio-bar">
+        <a class="studio-brand" href="/" aria-label="Fat Elephant home"><img src="/icon-192.png" alt="" width="36" height="36"></a>
+
+        <div class="studio-name">
+          <button type="button" class="studio-back" data-nav="back" aria-label="Previous step"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <label class="sr-only" for="studioName">Product name</label>
+          <input type="text" id="studioName" maxlength="24" placeholder="Your Product" autocomplete="off" spellcheck="false">
+        </div>
+
+        <ol class="steps studio-tabs" id="steps">
+          <li><button type="button" class="step is-current" data-step="0" aria-current="step"><b>1</b><span>Product</span></button></li>
+          <li><button type="button" class="step" data-step="1"><b>2</b><span>Look</span></button></li>
+          <li><button type="button" class="step" data-step="2"><b>3</b><span>Features</span></button></li>
+          <li><button type="button" class="step" data-step="3"><b>4</b><span>Launch</span></button></li>
+        </ol>
+
+        <div class="studio-actions">
+          <button type="button" class="studio-icon" data-action="copy-link" aria-label="Copy a link to this build" title="Copy link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg></button>
+          <button type="button" class="studio-icon" data-action="save-image" aria-label="Download a picture of this build" title="Download image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 20h14"/></svg></button>
+          <button type="button" class="studio-send" id="studioSend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12L20 4l-5 16-3.5-6.5z"/></svg><span>Send build</span></button>
+        </div>
+      </header>
+
+      <!-- ============ CANVAS ============ -->
+      <div class="studio-stage" id="stage">
+        <div class="studio-hud">
           <span class="hud-tag">Your build</span>
           <span class="hud-chips" id="hudChips" aria-hidden="true"></span>
-          <button type="button" class="hud-dice" id="randomise" aria-label="Surprise me with a random build">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="15" r="1" fill="currentColor"/></svg>
-            Surprise me
-          </button>
         </div>
+
+        <aside class="studio-tools" aria-label="Quick controls">
+          <div class="tool">
+            <p class="tool-label">Backdrop</p>
+            <div class="tool-dots" role="radiogroup" aria-label="Backdrop">
+              <button type="button" class="tool-dot is-on" role="radio" aria-checked="true" aria-label="Cream backdrop" title="Cream backdrop" data-group="backdrop" data-value="cream" style="--c:#fffdee"></button>
+              <button type="button" class="tool-dot" role="radio" aria-checked="false" aria-label="Mint backdrop" title="Mint backdrop" data-group="backdrop" data-value="mint" style="--c:#e2fbce"></button>
+              <button type="button" class="tool-dot" role="radio" aria-checked="false" aria-label="White backdrop" title="White backdrop" data-group="backdrop" data-value="white" style="--c:#ffffff"></button>
+              <button type="button" class="tool-dot" role="radio" aria-checked="false" aria-label="Midnight backdrop" title="Midnight backdrop" data-group="backdrop" data-value="midnight" style="--c:#06231d"></button>
+            </div>
+          </div>
+          <div class="tool">
+            <p class="tool-label">Type</p>
+            <div class="tool-btns" role="radiogroup" aria-label="Product type">
+              <button type="button" class="tool-btn is-on" role="radio" aria-checked="true" aria-label="Website or web app" title="Website or web app" data-group="type" data-value="web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/></svg></button>
+              <button type="button" class="tool-btn" role="radio" aria-checked="false" aria-label="Mobile app" title="Mobile app" data-group="type" data-value="mobile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></button>
+              <button type="button" class="tool-btn" role="radio" aria-checked="false" aria-label="AI assistant" title="AI assistant" data-group="type" data-value="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></svg></button>
+              <button type="button" class="tool-btn" role="radio" aria-checked="false" aria-label="Dashboard or internal tool" title="Dashboard or internal tool" data-group="type" data-value="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg></button>
+            </div>
+          </div>
+          <div class="tool tool--zoom">
+            <p class="tool-label">Zoom <b id="zoomVal">100%</b></p>
+            <div class="tool-zoom">
+              <button type="button" data-zoom="out" aria-label="Zoom out">&minus;</button>
+              <button type="button" data-zoom="reset" aria-label="Fit to the canvas">Fit</button>
+              <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
+            </div>
+          </div>
+        </aside>
 
         <div class="stage-view" id="stageView">
           <div class="stage-floor" aria-hidden="true"></div>
           <div class="stage-float">
+            <svg class="pv-sprite" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+              <defs>
+                <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21h4"/></symbol>
+                <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.5-5.5 7-5.5s6.2 1.9 7 5.5"/></symbol>
+                <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.3 3.7 5.1 3.7 8.5s-1.2 6.2-3.7 8.5c-2.5-2.3-3.7-5.1-3.7-8.5s1.2-6.2 3.7-8.5z"/></symbol>
+                <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+                <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
+                <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8.5a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></symbol>
+                <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
+                <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+                <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+                <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+                <symbol id="i-fwd" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+                <symbol id="i-reload" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.1-5"/><path d="M19 4v4h-4"/></symbol>
+                <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></symbol>
+                <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10h18M7 15h3"/></symbol>
+                <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20v-8M12 20V5M19 20v-5"/></symbol>
+                <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></symbol>
+                <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6.5-6 6.5-11a6.5 6.5 0 0 0-13 0c0 5 6.5 11 6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+                <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-5 4v-4A1.5 1.5 0 0 1 4 14.5z"/></symbol>
+                <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+                <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></symbol>
+                <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5M4 19h16"/></symbol>
+                <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+                <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+                <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v4a5 5 0 0 1-10 0zM12 16v5"/></symbol>
+                <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+                <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.5-7.97A6 6 0 0 1 18 9.5 4.3 4.3 0 0 1 17.5 18z"/></symbol>
+                <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></symbol>
+                <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+                <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+                <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12L20 4l-5 16-3.5-6.5z"/></symbol>
+                <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+                <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></symbol>
+                <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+                <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c.6-3.2 2.8-5 6-5s5.4 1.8 6 5M16 5.5a3 3 0 0 1 0 5.5M18 15c1.6.6 2.7 2 3 4.5"/></symbol>
+                <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></symbol>
+                <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></symbol>
+              </defs>
+            </svg>
+
             <div class="device" id="device" data-type="web" data-theme="lime" data-style="playful" aria-hidden="true">
+
+              <!-- browser window (web, AI and dashboard) -->
               <div class="dv-chrome">
-                <span class="dv-dots"><i></i><i></i><i></i></span>
-                <span class="dv-url" id="pvUrl">your-product.com</span>
+                <div class="dv-tabs">
+                  <span class="dv-dots"><i></i><i></i><i></i></span>
+                  <span class="dv-tab"><b class="dv-fav" data-initial>Y</b><span class="dv-tab-title" data-name>Your Product</span><svg class="ic" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></span>
+                </div>
+                <div class="dv-toolbar">
+                  <span class="dv-ctl"><svg class="ic"><use href="#i-back"/></svg><svg class="ic"><use href="#i-fwd"/></svg><svg class="ic"><use href="#i-reload"/></svg></span>
+                  <span class="dv-url"><svg class="ic"><use href="#i-lock"/></svg><span id="pvUrl">your-product.com</span></span>
+                  <span class="dv-ctl"><svg class="ic"><use href="#i-more"/></svg></span>
+                </div>
               </div>
-              <div class="dv-notch"></div>
+
+              <!-- phone details (mobile) -->
+              <div class="dv-island"></div>
+              <div class="dv-status">
+                <b>9:41</b>
+                <span class="dv-sys">
+                  <svg viewBox="0 0 18 12" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+                  <svg class="dv-wifi" viewBox="0 0 16 12" aria-hidden="true"><path d="M1.600 4.300a9.700 9.700 0 0 1 12.800 0M3.900 6.900a6.400 6.400 0 0 1 8.200 0M6.100 9.300a3.100 3.100 0 0 1 3.800 0"/><circle cx="8" cy="11" r="1.050"/></svg>
+                  <svg viewBox="0 0 26 12" aria-hidden="true"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="2"/><rect x="23" y="4" width="2" height="4" rx="1" opacity=".5"/></svg>
+                </span>
+              </div>
 
               <div class="dv-screen">
                 <header class="pv-bar">
-                  <span class="pv-logo" id="pvLogo">Y</span>
+                  <span class="pv-logo" data-initial>Y</span>
                   <strong class="pv-name" data-name>Your Product</strong>
-                  <span class="pv-nav"><i></i><i></i><i></i></span>
-                  <span class="pv-bell mod" data-feature="notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21h4"/></svg><b></b></span>
-                  <span class="pv-signin mod" data-feature="auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.5-5.5 7-5.5s6.2 1.9 7 5.5"/></svg>Sign in</span>
-                  <span class="pv-lang mod" data-feature="languages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.3 3.7 5.1 3.7 8.5s-1.2 6.2-3.7 8.5c-2.5-2.3-3.7-5.1-3.7-8.5s1.2-6.2 3.7-8.5z"/></svg>EN</span>
-                  <span class="pv-mode mod" data-feature="darkmode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></span>
+                  <span class="pv-nav"><span class="is-here">Home</span><span>Features</span><span>Pricing</span><span>About</span></span>
+                  <span class="pv-bell mod" data-feature="notifications"><svg class="ic"><use href="#i-bell"/></svg><b>3</b></span>
+                  <span class="pv-lang mod" data-feature="languages"><svg class="ic"><use href="#i-globe"/></svg>EN<svg class="ic ic--sm"><use href="#i-down"/></svg></span>
+                  <span class="pv-mode mod" data-feature="darkmode"><svg class="ic"><use href="#i-moon"/></svg></span>
+                  <span class="pv-signin mod" data-feature="auth"><svg class="ic"><use href="#i-user"/></svg>Sign in</span>
                 </header>
 
-                <div class="pv-search mod" data-feature="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><span>Search anything</span></div>
-
                 <div class="pv-main">
-                  <aside class="pv-side"><i></i><i></i><i></i><i></i></aside>
+                  <aside class="pv-side">
+                    <span class="is-here"><svg class="ic"><use href="#i-grid"/></svg>Overview</span>
+                    <span><svg class="ic"><use href="#i-list"/></svg>Orders</span>
+                    <span><svg class="ic"><use href="#i-users"/></svg>Customers</span>
+                    <span><svg class="ic"><use href="#i-file"/></svg>Reports</span>
+                    <span><svg class="ic"><use href="#i-gear"/></svg>Settings</span>
+                  </aside>
 
-                  <div class="pv-content">
-                    <section class="pv-hero">
-                      <h3 data-name>Your Product</h3>
-                      <p id="pvTagline">Built to be found, loved and shared.</p>
-                      <span class="pv-cta" id="pvCta">Get started</span>
-                    </section>
+                  <div class="pv-scroll" id="pvScroll">
+                    <div class="pv-pad">
+                      <div class="pv-search mod" data-feature="search">
+                        <svg class="ic"><use href="#i-search"/></svg>
+                        <span>Search products or help</span>
+                        <kbd>/</kbd>
+                      </div>
 
-                    <section class="pv-chatmain">
-                      <span class="bubble bubble--me">Hi! What can you do?</span>
-                      <span class="bubble bubble--bot"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>Plenty. Where shall we start?</span>
-                      <span class="bubble bubble--bot typing"><u></u><u></u><u></u></span>
-                    </section>
+                      <!-- ===== website ===== -->
+                      <section class="sc sc--web">
+                        <div class="web-hero">
+                          <div class="web-copy">
+                            <span class="pv-eyebrow"><i></i><span>Now live: <b data-name>Your Product</b></span></span>
+                            <h3 data-tagline>Built to be found, loved and shared.</h3>
+                            <p class="pv-sub"><span data-name>Your Product</span> brings everything together in one simple place, so you can get more done with less effort.</p>
+                            <div class="pv-ctas"><span class="pv-cta" data-cta>Get started</span><span class="pv-cta pv-cta--ghost">See how it works</span></div>
+                            <div class="pv-proof"><span class="pv-faces"><i></i><i></i><i></i></span><span><b>4.9</b> from 2,000+ happy customers</span></div>
+                          </div>
+                          <svg class="web-art" viewBox="0 0 230 180" aria-hidden="true">
+                            <rect class="a-back" x="52" y="10" width="160" height="118" rx="16"/>
+                            <rect class="a-card" x="14" y="34" width="162" height="124" rx="16"/>
+                            <circle class="a-dot" cx="30" cy="50" r="3.2"/><circle class="a-dot" cx="41" cy="50" r="3.2"/><circle class="a-dot" cx="52" cy="50" r="3.2"/>
+                            <rect class="a-ink" x="30" y="68" width="62" height="8" rx="4"/>
+                            <rect class="a-soft" x="30" y="84" width="96" height="6" rx="3"/>
+                            <rect class="a-soft" x="30" y="95" width="76" height="6" rx="3"/>
+                            <rect class="a-acc" x="30" y="127" width="14" height="19" rx="3"/><rect class="a-acc" x="50" y="118" width="14" height="28" rx="3"/><rect class="a-acc" x="70" y="108" width="14" height="38" rx="3"/><rect class="a-acc" x="90" y="120" width="14" height="26" rx="3"/><rect class="a-acc" x="110" y="104" width="14" height="42" rx="3"/>
+                            <circle class="a-acc a-ring" cx="156" cy="40" r="19"/>
+                            <path class="a-tick" d="M147.500 40.500l6 6 10-12"/>
+                            <rect class="a-badge" x="112" y="128" width="102" height="30" rx="15"/>
+                            <circle class="a-acc" cx="128" cy="143" r="6.500"/>
+                            <text x="140" y="146.500">Order placed</text>
+                          </svg>
+                        </div>
+                        <div class="web-benefits">
+                          <span><svg class="ic"><use href="#i-sparkle"/></svg><b>Quick to start</b><small>Up and running in minutes</small></span>
+                          <span><svg class="ic"><use href="#i-shield"/></svg><b>Safe by default</b><small>Your data stays yours</small></span>
+                          <span><svg class="ic"><use href="#i-chat"/></svg><b>Friendly help</b><small>Real people, fast replies</small></span>
+                        </div>
+                      </section>
 
-                    <section class="pv-kpis">
-                      <div class="kpi"><span></span><b></b></div>
-                      <div class="kpi"><span></span><b></b></div>
-                      <div class="kpi"><span></span><b></b></div>
-                      <div class="kpi kpi--chart"><em style="--h:40%"></em><em style="--h:65%"></em><em style="--h:50%"></em><em style="--h:85%"></em><em style="--h:70%"></em><em style="--h:95%"></em></div>
-                    </section>
+                      <!-- ===== mobile app ===== -->
+                      <section class="sc sc--mobile">
+                        <div class="m-greet"><div><small>Good morning</small><strong>Alex</strong></div><span class="m-avatar">A</span></div>
+                        <div class="m-feature">
+                          <div class="m-feature-copy">
+                            <span class="pv-eyebrow"><i></i><span>Featured</span></span>
+                            <h3 data-tagline>Everything you need, in your pocket.</h3>
+                            <span class="pv-cta" data-cta>Open app</span>
+                          </div>
+                          <svg class="m-art" viewBox="0 0 90 100" aria-hidden="true"><circle class="m-halo" cx="45" cy="50" r="41"/><circle class="a-card" cx="45" cy="50" r="28"/><circle class="a-acc a-ring" cx="45" cy="50" r="18"/><path class="a-tick" d="M37 50.500l6 6 10.500-12.500"/><circle class="m-spark" cx="12" cy="20" r="3"/><circle class="m-spark" cx="80" cy="82" r="2.500"/></svg>
+                        </div>
+                        <div class="m-chips"><span class="is-here">All</span><span>Popular</span><span>New</span></div>
+                        <div class="m-list">
+                          <div><i class="th th-1"><svg class="ic"><use href="#i-sparkle"/></svg></i><span><b>Morning routine</b><small>12 min · Easy</small></span><svg class="ic"><use href="#i-fwd"/></svg></div>
+                          <div><i class="th th-2"><svg class="ic"><use href="#i-bag"/></svg></i><span><b>Quick order</b><small>2 items · 18 min</small></span><svg class="ic"><use href="#i-fwd"/></svg></div>
+                          <div><i class="th th-3"><svg class="ic"><use href="#i-pin"/></svg></i><span><b>Saved places</b><small>5 spots nearby</small></span><svg class="ic"><use href="#i-fwd"/></svg></div>
+                        </div>
+                      </section>
 
-                    <div class="pv-mods">
-                      <div class="pv-card mod" data-feature="payments">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10h18M7 15h3"/></svg>Checkout</span>
-                        <span class="pv-line"></span><span class="pv-line pv-line--short"></span>
-                        <span class="pv-btn">Pay now</span>
-                      </div>
-                      <div class="pv-card mod" data-feature="analytics">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>Insights</span>
-                        <div class="pv-bars"><em style="--h:35%"></em><em style="--h:60%"></em><em style="--h:45%"></em><em style="--h:80%"></em><em style="--h:100%"></em></div>
-                      </div>
-                      <div class="pv-card mod" data-feature="ai">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>Assistant</span>
-                        <span class="pv-pill">Ask me anything</span>
-                        <span class="pv-dots3"><u></u><u></u><u></u></span>
-                      </div>
-                      <div class="pv-card mod" data-feature="maps">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6.5-6 6.5-11a6.5 6.5 0 0 0-13 0c0 5 6.5 11 6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>Nearby</span>
-                        <div class="pv-map"><i></i><i></i><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s7-6.3 7-12a7 7 0 0 0-14 0c0 5.7 7 12 7 12zm0-9a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg></div>
-                      </div>
-                      <div class="pv-card mod" data-feature="chat">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-5 4v-4A1.5 1.5 0 0 1 4 14.5z"/></svg>Messages</span>
-                        <span class="pv-msg"></span><span class="pv-msg pv-msg--me"></span>
-                      </div>
-                      <div class="pv-card mod" data-feature="bookings">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Book a slot</span>
-                        <div class="pv-cal"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div>
-                      </div>
-                      <div class="pv-card mod" data-feature="reviews">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></svg>Reviews</span>
-                        <div class="pv-stars"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></svg><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></svg><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></svg><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></svg><svg viewBox="0 0 24 24" class="dim"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8z"/></svg></div>
-                        <span class="pv-line"></span>
-                      </div>
-                      <div class="pv-card mod" data-feature="uploads">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5M4 19h16"/></svg>Upload</span>
-                        <div class="pv-drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5"/></svg></div>
-                      </div>
-                      <div class="pv-card mod" data-feature="admin">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Admin</span>
-                        <div class="pv-row"><span class="pv-line"></span><b class="pv-switch on"></b></div>
-                        <div class="pv-row"><span class="pv-line pv-line--short"></span><b class="pv-switch"></b></div>
-                        <div class="pv-row"><span class="pv-line"></span><b class="pv-switch on"></b></div>
-                      </div>
-                      <div class="pv-card mod" data-feature="security">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>2-step login</span>
-                        <div class="pv-code"><i></i><i></i><i></i><i></i></div>
-                      </div>
-                      <div class="pv-card mod" data-feature="integrations">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v4M15 3v4M7 7h10v4a5 5 0 0 1-10 0zM12 16v5"/></svg>Connected</span>
-                        <div class="pv-links"><i></i><u></u><i></i><u></u><i></i></div>
-                      </div>
-                      <div class="pv-card mod" data-feature="cms">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Content</span>
-                        <span class="pv-line pv-line--title"></span><span class="pv-line"></span><span class="pv-line pv-line--short"></span>
-                        <span class="pv-btn">Publish</span>
-                      </div>
-                      <div class="pv-card mod" data-feature="offline">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-7.97A6 6 0 0 1 18 9.5 4.3 4.3 0 0 1 17.5 18z"/><path d="M9.5 13.5l2 2 3.5-3.5"/></svg>Offline ready</span>
-                        <span class="pv-pill">Syncs when online</span>
-                      </div>
-                      <div class="pv-card mod" data-feature="sharing">
-                        <span class="pv-k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Invite friends</span>
-                        <div class="pv-avatars"><i></i><i></i><i></i><b>+</b></div>
+                      <!-- ===== AI assistant ===== -->
+                      <section class="sc sc--ai">
+                        <div class="ai-head"><span class="ai-orb"><svg class="ic ic--fill"><use href="#i-sparkle"/></svg></span><div><b data-name>Your Product</b><small>Online, replies instantly</small></div></div>
+                        <div class="ai-thread">
+                          <span class="bubble bubble--me">Can you summarise my week?</span>
+                          <div class="bubble bubble--bot">
+                            <svg class="ic ic--fill"><use href="#i-sparkle"/></svg>
+                            <div><p>Of course. Here is your week at a glance:</p><ul><li>12 tasks done, 3 still open</li><li>2 meetings moved to Friday</li><li>Inbox down to 8 unread</li></ul></div>
+                          </div>
+                          <span class="bubble bubble--me">Draft a reply to Priya</span>
+                          <span class="bubble bubble--bot typing"><u></u><u></u><u></u></span>
+                        </div>
+                        <div class="ai-chips"><span>Plan my day</span><span>Summarise a file</span><span>Write an email</span></div>
+                        <div class="ai-composer"><span>Ask anything</span><b><svg class="ic"><use href="#i-mic"/></svg></b><b class="is-send"><svg class="ic"><use href="#i-send"/></svg></b></div>
+                      </section>
+
+                      <!-- ===== dashboard ===== -->
+                      <section class="sc sc--dash">
+                        <div class="d-head"><div><small>Welcome back, Alex</small><h3>Overview</h3></div><span class="d-range">Last 7 days<svg class="ic ic--sm"><use href="#i-down"/></svg></span></div>
+                        <div class="d-kpis">
+                          <div class="kpi"><small>Revenue</small><b>$48.2k</b><em class="up">+12.4%</em></div>
+                          <div class="kpi"><small>Orders</small><b>1,284</b><em class="up">+8.1%</em></div>
+                          <div class="kpi"><small>Refunds</small><b>2.1%</b><em class="down">-0.4%</em></div>
+                        </div>
+                        <div class="d-chart">
+                          <div class="d-chart-head"><b>Sales this week</b><small>Daily totals</small></div>
+                          <svg viewBox="0 0 320 110" preserveAspectRatio="none" aria-hidden="true">
+                            <path class="ch-grid" d="M0 20h320M0 55h320M0 90h320"/>
+                            <path class="ch-area" d="M0 84C28 78 44 66 72 68s44 20 72 8 46-44 76-40 44 14 70-2 22-14 30-16V110H0z"/>
+                            <path class="ch-line" d="M0 84C28 78 44 66 72 68s44 20 72 8 46-44 76-40 44 14 70-2 22-14 30-16"/>
+                          </svg>
+                          <div class="d-axis"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+                        </div>
+                        <div class="d-table">
+                          <div class="d-row d-row--head"><span>Customer</span><span>Status</span><span>Total</span></div>
+                          <div class="d-row"><span><i>P</i>Priya Sharma</span><span><em class="pill pill--ok">Paid</em></span><span>$128.00</span></div>
+                          <div class="d-row"><span><i>S</i>Sam Lee</span><span><em class="pill">Pending</em></span><span>$64.50</span></div>
+                          <div class="d-row"><span><i>M</i>Maya Chen</span><span><em class="pill pill--ok">Paid</em></span><span>$210.00</span></div>
+                        </div>
+                      </section>
+
+                      <!-- ===== feature screens ===== -->
+                      <div class="pv-mods">
+
+                        <div class="pv-card mod" data-feature="auth">
+                          <span class="pv-k"><svg class="ic"><use href="#i-user"/></svg>Welcome back</span>
+                          <div class="fld"><small>Email</small><span>alex@example.com</span></div>
+                          <div class="fld"><small>Password</small><span>••••••••••</span></div>
+                          <span class="pv-btn pv-btn--full">Sign in</span>
+                          <span class="pv-or">or continue with</span>
+                          <span class="pv-btn pv-btn--ghost pv-btn--full"><b class="g">G</b>Google</span>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="security">
+                          <span class="pv-k"><svg class="ic"><use href="#i-shield"/></svg>Verify it is you<em class="pv-tag">2-step</em></span>
+                          <p class="pv-note">Enter the 6-digit code we sent to your phone.</p>
+                          <div class="pv-code"><i>4</i><i>8</i><i>2</i><i>9</i><i class="cur"></i><i></i></div>
+                          <small class="pv-muted">Resend code in 0:24</small>
+                        </div>
+
+                        <div class="pv-card pv-card--wide mod" data-feature="payments">
+                          <span class="pv-k"><svg class="ic"><use href="#i-card"/></svg>Checkout<em class="pv-tag">Secure</em></span>
+                          <div class="co">
+                            <div class="co-lines">
+                              <div><span>Starter plan</span><b>$24.00</b></div>
+                              <div><span>Setup</span><b>$0.00</b></div>
+                              <div class="tot"><span>Total</span><b>$24.00</b></div>
+                            </div>
+                            <div class="co-pay">
+                              <div class="co-card"><span class="co-chip"></span><b>•••• 4242</b><small>08/28</small></div>
+                              <span class="pv-btn pv-btn--full">Pay $24.00</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="pv-card pv-card--wide mod" data-feature="analytics">
+                          <span class="pv-k"><svg class="ic"><use href="#i-chart"/></svg>Analytics<em class="pv-tag pv-tag--up">+18.2%</em></span>
+                          <div class="an">
+                            <div class="an-num"><b>12.4k</b><small>visitors this week</small></div>
+                            <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path class="ch-area" d="M0 46C20 42 30 30 52 34s30 14 50 2 30-26 50-22 30 10 48 0V60H0z"/><path class="ch-line" d="M0 46C20 42 30 30 52 34s30 14 50 2 30-26 50-22 30 10 48 0"/></svg>
+                          </div>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="notifications">
+                          <span class="pv-k"><svg class="ic"><use href="#i-bell"/></svg>Notifications<em class="pv-tag">3 new</em></span>
+                          <div class="nt"><i></i><span><b>Your order has shipped</b><small>2 min ago</small></span></div>
+                          <div class="nt"><i></i><span><b>Priya replied to you</b><small>1 hour ago</small></span></div>
+                          <div class="nt nt--read"><i></i><span><b>Welcome aboard</b><small>Yesterday</small></span></div>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="reviews">
+                          <span class="pv-k"><svg class="ic"><use href="#i-star"/></svg>Reviews</span>
+                          <div class="rv-top"><b>4.8</b><span><span class="pv-stars"><svg class="ic ic--fill"><use href="#i-star"/></svg><svg class="ic ic--fill"><use href="#i-star"/></svg><svg class="ic ic--fill"><use href="#i-star"/></svg><svg class="ic ic--fill"><use href="#i-star"/></svg><svg class="ic ic--fill"><use href="#i-star"/></svg></span><small>1,240 reviews</small></span></div>
+                          <div class="rv-quote"><i>P</i><span><b>Priya S.</b>Set up in five minutes and it just works.</span></div>
+                        </div>
+
+                        <div class="pv-card pv-card--wide mod" data-feature="bookings">
+                          <span class="pv-k"><svg class="ic"><use href="#i-cal"/></svg>Book a slot</span>
+                          <div class="bk-days">
+                            <span><small>Mon</small><b>10</b></span><span><small>Tue</small><b>11</b></span><span><small>Wed</small><b>12</b></span><span class="on"><small>Thu</small><b>13</b></span><span><small>Fri</small><b>14</b></span><span><small>Sat</small><b>15</b></span>
+                          </div>
+                          <div class="bk-times"><span>10:00</span><span>11:30</span><span class="on">14:00</span><span>16:30</span></div>
+                          <span class="pv-btn pv-btn--full">Confirm booking</span>
+                        </div>
+
+                        <div class="pv-card pv-card--wide mod" data-feature="maps">
+                          <span class="pv-k"><svg class="ic"><use href="#i-pin"/></svg>Nearby</span>
+                          <div class="map">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                              <rect class="m-land" width="300" height="120"/>
+                              <path class="m-water" d="M0 96c40-10 70 8 110-2s60-22 110-14 60 6 80 0v56H0z"/>
+                              <rect class="m-park" x="196" y="10" width="62" height="40" rx="10"/>
+                              <path class="m-road m-road--big" d="M-10 52h320M110-10l30 140"/>
+                              <path class="m-road" d="M-10 24h320M-10 80h200M60-10v140M200-10l-20 140M250 40v90"/>
+                              <path class="m-route m-route--under" d="M60 80V52h80l30 28"/>
+                              <path class="m-route" d="M60 80V52h80l30 28"/>
+                              <circle class="m-pin-dot" cx="60" cy="80" r="5"/>
+                              <path class="m-pin" d="M170 66s9-8 9-15a9 9 0 0 0-18 0c0 7 9 15 9 15zm0-11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
+                              <circle class="m-pin-dot m-pin-dot--sm" cx="232" cy="68" r="4"/>
+                            </svg>
+                            <span class="map-chip"><b>Nearest</b>0.8 km · 6 min walk</span>
+                          </div>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="chat">
+                          <span class="pv-k"><svg class="ic"><use href="#i-chat"/></svg>Support<em class="pv-tag pv-tag--live">Online</em></span>
+                          <span class="cb">Hi! How can we help?</span>
+                          <span class="cb cb--me">My payment did not go through</span>
+                          <span class="cb typing"><u></u><u></u><u></u></span>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="ai">
+                          <span class="pv-k"><svg class="ic ic--fill"><use href="#i-sparkle"/></svg>Assistant</span>
+                          <span class="cb cb--me">Where is my order?</span>
+                          <span class="cb">It is out for delivery and should arrive by 6 pm.</span>
+                          <span class="pv-ask">Ask me anything<svg class="ic"><use href="#i-send"/></svg></span>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="sharing">
+                          <span class="pv-k"><svg class="ic"><use href="#i-share"/></svg>Invite friends</span>
+                          <p class="pv-note">Give a month, get a month.</p>
+                          <div class="pv-avatars"><i>P</i><i>S</i><i>M</i><b>+3</b></div>
+                          <span class="pv-link"><span data-domain>your-product.com</span>/invite/a1b2</span>
+                          <span class="pv-btn pv-btn--full">Copy invite link</span>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="integrations">
+                          <span class="pv-k"><svg class="ic"><use href="#i-plug"/></svg>Connected apps</span>
+                          <div class="ap"><i class="ap-1">P</i><span><b>Payments</b><small>Connected</small></span><svg class="ic"><use href="#i-check"/></svg></div>
+                          <div class="ap"><i class="ap-2">C</i><span><b>Calendar</b><small>Connected</small></span><svg class="ic"><use href="#i-check"/></svg></div>
+                          <div class="ap"><i class="ap-3">E</i><span><b>Email</b><small>Connect</small></span><span class="pv-plus">+</span></div>
+                        </div>
+
+                        <div class="pv-card mod" data-feature="uploads">
+                          <span class="pv-k"><svg class="ic"><use href="#i-upload"/></svg>Upload files</span>
+                          <div class="pv-drop"><svg class="ic"><use href="#i-upload"/></svg>Drop files here</div>
+                          <div class="up"><span><b>brief.pdf</b><small>72%</small></span><div class="bar"><i style="width:72%"></i></div></div>
+                          <div class="up"><span><b>logo.png</b><small>Done</small></span><div class="bar"><i style="width:100%"></i></div></div>
+                        </div>
+
+                        <div class="pv-card pv-card--wide mod" data-feature="cms">
+                          <span class="pv-k"><svg class="ic"><use href="#i-edit"/></svg>Content<small class="pv-muted">Draft saved</small></span>
+                          <div class="cm">
+                            <div class="cm-tools"><b>B</b><i>I</i><u>U</u><span><svg class="ic"><use href="#i-list"/></svg></span></div>
+                            <h4>Spring launch announcement</h4>
+                            <p>We are excited to share what is new this season, from a fresh look to faster checkout.</p>
+                          </div>
+                          <div class="cm-actions"><span class="pv-btn pv-btn--ghost">Save draft</span><span class="pv-btn">Publish</span></div>
+                        </div>
+
+                        <div class="pv-card pv-card--wide mod" data-feature="admin">
+                          <span class="pv-k"><svg class="ic"><use href="#i-sliders"/></svg>Team and roles</span>
+                          <div class="ad"><i>P</i><span><b>Priya Sharma</b><small>Active now</small></span><em class="pill pill--ok">Admin</em><b class="pv-switch on"></b></div>
+                          <div class="ad"><i>A</i><span><b>Alex Morgan</b><small>Active today</small></span><em class="pill">Editor</em><b class="pv-switch on"></b></div>
+                          <div class="ad"><i>S</i><span><b>Sam Lee</b><small>Active 2d ago</small></span><em class="pill">Viewer</em><b class="pv-switch"></b></div>
+                        </div>
+
+                        <div class="pv-card pv-card--wide mod" data-feature="offline">
+                          <span class="pv-k"><svg class="ic"><use href="#i-cloud"/></svg>Offline ready</span>
+                          <div class="off"><span><b>You are offline</b><small>3 changes will sync when you reconnect.</small></span><div class="bar"><i style="width:35%"></i></div></div>
+                        </div>
+
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <footer class="pv-tabbar"><i></i><i></i><i></i><i></i></footer>
+                <footer class="pv-tabbar">
+                  <span class="is-here"><svg class="ic"><use href="#i-home"/></svg>Home</span>
+                  <span><svg class="ic"><use href="#i-compass"/></svg>Explore</span>
+                  <span><svg class="ic"><use href="#i-bag"/></svg>Orders</span>
+                  <span><svg class="ic"><use href="#i-user"/></svg>Profile</span>
+                </footer>
+                <div class="dv-home"></div>
               </div>
             </div>
           </div>
         </div>
+
+        <button type="button" class="studio-surprise" id="randomise" aria-label="Surprise me with a random build">
+          <span class="surprise-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="15" r="1" fill="currentColor"/></svg></span>
+          <span class="surprise-text"><strong>Surprise me</strong><small>A random build</small></span>
+        </button>
 
         <div class="stats" id="stats">
           <div class="stat" data-stat="reach"><span>Reach</span><div class="stat-track"><div class="stat-fill"></div></div></div>
@@ -209,136 +494,148 @@
           <div class="stat" data-stat="polish"><span>Polish</span><div class="stat-track"><div class="stat-fill"></div></div></div>
           <div class="stat" data-stat="scale"><span>Scale</span><div class="stat-track"><div class="stat-fill"></div></div></div>
         </div>
+
+        <p class="studio-toast" id="studioToast" role="status"></p>
       </div>
 
-      <!-- ============ CONTROLS ============ -->
-      <div class="builder-panel">
-        <ol class="steps" id="steps">
-          <li><button type="button" class="step is-current" data-step="0" aria-current="step"><b>1</b><span>Product</span></button></li>
-          <li><button type="button" class="step" data-step="1"><b>2</b><span>Look</span></button></li>
-          <li><button type="button" class="step" data-step="2"><b>3</b><span>Features</span></button></li>
-          <li><button type="button" class="step" data-step="3"><b>4</b><span>Launch</span></button></li>
-        </ol>
-
-        <!-- Step 1 -->
-        <div class="pane" data-pane="0">
-          <h2>What are we building?</h2>
-          <div class="field">
-            <label for="productName">Name it</label>
-            <input type="text" id="productName" maxlength="24" placeholder="Your Product" autocomplete="off">
-          </div>
-          <div class="opts" role="radiogroup" aria-label="Product type">
-            <button type="button" class="opt is-on" role="radio" aria-checked="true" data-group="type" data-value="web">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/></svg>
-              <strong>Website or web app</strong><span>Lives in the browser, open to everyone.</span>
-            </button>
-            <button type="button" class="opt" role="radio" aria-checked="false" data-group="type" data-value="mobile">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
-              <strong>Mobile app</strong><span>In your customers' pockets.</span>
-            </button>
-            <button type="button" class="opt" role="radio" aria-checked="false" data-group="type" data-value="ai">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></svg>
-              <strong>AI assistant</strong><span>Talks, thinks and gets things done.</span>
-            </button>
-            <button type="button" class="opt" role="radio" aria-checked="false" data-group="type" data-value="dash">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>
-              <strong>Dashboard or internal tool</strong><span>Turns messy data into clear decisions.</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="pane" data-pane="1" hidden>
-          <h2>Make it yours.</h2>
-
-          <p class="pane-label">Colour</p>
-          <div class="palette">
-            <div class="palette-tabs" role="tablist" aria-label="Colour families" id="paletteTabs"></div>
-            <div class="palette-grid" id="paletteGrid" role="radiogroup" aria-label="Accent colour"></div>
-            <div class="palette-readout">
-              <i id="swatchDot" aria-hidden="true"></i>
-              <strong id="swatchName">Lime</strong>
-              <code id="swatchHex">#E3EF26</code>
-              <label class="palette-custom">Custom <input type="color" id="customColour" value="#e3ef26" aria-label="Pick a custom colour"></label>
+      <!-- ============ PANEL ============ -->
+      <div class="studio-panel" id="panel">
+      <section class="acc is-open" data-acc="0">
+        <button type="button" class="acc-head" data-step="0" aria-expanded="true" aria-controls="pane-0">
+          <span class="acc-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span>
+          <span class="acc-text"><strong>Product</strong><small id="accSub0">Website or web app</small></span>
+          <span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+  <div class="pane" id="pane-0" data-pane="0">
+            <h2>What are we building?</h2>
+            <div class="opts" role="radiogroup" aria-label="Product type">
+              <button type="button" class="opt is-on" role="radio" aria-checked="true" data-group="type" data-value="web">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/></svg>
+                <strong>Website or web app</strong><span>Lives in the browser, open to everyone.</span>
+              </button>
+              <button type="button" class="opt" role="radio" aria-checked="false" data-group="type" data-value="mobile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+                <strong>Mobile app</strong><span>In your customers' pockets.</span>
+              </button>
+              <button type="button" class="opt" role="radio" aria-checked="false" data-group="type" data-value="ai">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></svg>
+                <strong>AI assistant</strong><span>Talks, thinks and gets things done.</span>
+              </button>
+              <button type="button" class="opt" role="radio" aria-checked="false" data-group="type" data-value="dash">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>
+                <strong>Dashboard or internal tool</strong><span>Turns messy data into clear decisions.</span>
+              </button>
             </div>
           </div>
+      </section>
+      <section class="acc" data-acc="1">
+        <button type="button" class="acc-head" data-step="1" aria-expanded="false" aria-controls="pane-1">
+          <span class="acc-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-1.8 0-1.5-1.2-1.7-1.2-2.9 0-1 .8-1.6 1.9-1.6H17a4 4 0 0 0 4-4C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg></span>
+          <span class="acc-text"><strong>Look</strong><small id="accSub1">Lime, cream, playful</small></span>
+          <span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+  <div class="pane" id="pane-1" data-pane="1" hidden>
+            <h2>Make it yours.</h2>
 
-          <p class="pane-label">Backdrop</p>
-          <div class="backdrops" role="radiogroup" aria-label="Backdrop">
-            <button type="button" class="bd is-on" role="radio" aria-checked="true" data-group="backdrop" data-value="cream"><i style="--c:#fffdee"></i><span>Cream</span></button>
-            <button type="button" class="bd" role="radio" aria-checked="false" data-group="backdrop" data-value="mint"><i style="--c:#e2fbce"></i><span>Mint</span></button>
-            <button type="button" class="bd" role="radio" aria-checked="false" data-group="backdrop" data-value="white"><i style="--c:#ffffff"></i><span>White</span></button>
-            <button type="button" class="bd" role="radio" aria-checked="false" data-group="backdrop" data-value="midnight"><i style="--c:#06231d"></i><span>Midnight</span></button>
-          </div>
-
-          <p class="pane-label">Personality</p>
-          <div class="opts opts--tight" role="radiogroup" aria-label="Style">
-            <button type="button" class="opt is-on" role="radio" aria-checked="true" data-group="style" data-value="playful"><strong>Playful</strong><span>Round, bouncy, friendly.</span></button>
-            <button type="button" class="opt" role="radio" aria-checked="false" data-group="style" data-value="clean"><strong>Clean</strong><span>Calm, soft and minimal.</span></button>
-            <button type="button" class="opt" role="radio" aria-checked="false" data-group="style" data-value="bold"><strong>Bold</strong><span>Sharp, loud, confident.</span></button>
-          </div>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="pane" data-pane="2" hidden>
-          <h2>Switch on the good stuff.</h2>
-          <p class="pane-hint"><span id="featureCount">0</span> of <span id="featureTotal">18</span> on. Tap to add or remove.</p>
-          <p class="pane-note" id="includedNote" hidden></p>
-          <div id="featGroups"></div>
-        </div>
-
-        <!-- Step 4 -->
-        <div class="pane" data-pane="3" hidden>
-          <h2>Ready for launch?</h2>
-          <div class="summary" id="summary">
-            <p class="summary-lead" id="summaryLead"></p>
-            <dl class="summary-list">
-              <div><dt>Type</dt><dd id="sumType"></dd></div>
-              <div><dt>Look</dt><dd id="sumLook"></dd></div>
-              <div><dt>Features</dt><dd id="sumFeatures"></dd></div>
-              <div><dt>Size</dt><dd id="sumScope"></dd></div>
-            </dl>
-          </div>
-          <div class="build-share">
-            <p class="build-share-label">Keep it or show someone</p>
-            <div class="build-share-row">
-              <button type="button" class="btn btn-outline" id="copyLink">Copy link</button>
-              <button type="button" class="btn btn-outline" id="saveImage">Download image</button>
+            <p class="pane-label">Colour</p>
+            <div class="palette">
+              <div class="palette-tabs" role="tablist" aria-label="Colour families" id="paletteTabs"></div>
+              <div class="palette-grid" id="paletteGrid" role="radiogroup" aria-label="Accent colour"></div>
+              <div class="palette-readout">
+                <i id="swatchDot" aria-hidden="true"></i>
+                <strong id="swatchName">Lime</strong>
+                <code id="swatchHex">#E3EF26</code>
+                <label class="palette-custom">Custom <input type="color" id="customColour" value="#e3ef26" aria-label="Pick a custom colour"></label>
+              </div>
             </div>
-            <p class="build-share-note" id="shareNote" role="status"></p>
-          </div>
-          <div class="field">
-            <label for="yourName">Your name <small>(optional)</small></label>
-            <input type="text" id="yourName" autocomplete="name">
-          </div>
-          <div class="field">
-            <label for="yourEmail">Your email</label>
-            <input type="email" id="yourEmail" autocomplete="email" placeholder="you@company.com">
-          </div>
-          <div class="field">
-            <label for="yourNotes">Anything else we should know? <small>(optional)</small></label>
-            <textarea id="yourNotes" rows="3" placeholder="Who is it for? What problem does it solve?"></textarea>
-          </div>
-          <input type="text" name="website" class="ship-hp" id="buildHp" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <p class="builder-error" id="buildError" role="alert"></p>
-          <button type="button" class="btn btn-primary builder-send" id="sendBuild">Send this build to Fat Elephant</button>
-          <p class="builder-fine">Your build goes straight to our inbox, and we'll reply to the email you give. See our <a href="/privacy">Privacy Policy</a>.</p>
 
-          <div class="ship-done build-done" id="buildDone" hidden>
-            <div class="ship-check">
-              <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false"><circle class="ship-ring" cx="40" cy="40" r="30"/><path class="ship-tick" d="M27 41l9 9 18-20"/></svg>
+            <p class="pane-label">Backdrop</p>
+            <div class="backdrops" role="radiogroup" aria-label="Backdrop">
+              <button type="button" class="bd is-on" role="radio" aria-checked="true" data-group="backdrop" data-value="cream"><i style="--c:#fffdee"></i><span>Cream</span></button>
+              <button type="button" class="bd" role="radio" aria-checked="false" data-group="backdrop" data-value="mint"><i style="--c:#e2fbce"></i><span>Mint</span></button>
+              <button type="button" class="bd" role="radio" aria-checked="false" data-group="backdrop" data-value="white"><i style="--c:#ffffff"></i><span>White</span></button>
+              <button type="button" class="bd" role="radio" aria-checked="false" data-group="backdrop" data-value="midnight"><i style="--c:#06231d"></i><span>Midnight</span></button>
             </div>
-            <p class="ship-heading">Build sent.</p>
-            <p id="buildDoneText" role="status"></p>
-          </div>
-        </div>
 
+            <p class="pane-label">Personality</p>
+            <div class="opts opts--tight" role="radiogroup" aria-label="Style">
+              <button type="button" class="opt is-on" role="radio" aria-checked="true" data-group="style" data-value="playful"><strong>Playful</strong><span>Round, bouncy, friendly.</span></button>
+              <button type="button" class="opt" role="radio" aria-checked="false" data-group="style" data-value="clean"><strong>Clean</strong><span>Calm, soft and minimal.</span></button>
+              <button type="button" class="opt" role="radio" aria-checked="false" data-group="style" data-value="bold"><strong>Bold</strong><span>Sharp, loud, confident.</span></button>
+            </div>
+          </div>
+      </section>
+      <section class="acc" data-acc="2">
+        <button type="button" class="acc-head" data-step="2" aria-expanded="false" aria-controls="pane-2">
+          <span class="acc-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="16" cy="12" r="2.5"/></svg></span>
+          <span class="acc-text"><strong>Features</strong><small id="accSub2">None yet</small></span>
+          <span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+  <div class="pane" id="pane-2" data-pane="2" hidden>
+            <h2>Switch on the good stuff.</h2>
+            <p class="pane-hint"><span id="featureCount">0</span> of <span id="featureTotal">18</span> on. Tap to add or remove.</p>
+            <p class="pane-note" id="includedNote" hidden></p>
+            <div id="featGroups"></div>
+          </div>
+      </section>
+      <section class="acc" data-acc="3">
+        <button type="button" class="acc-head" data-step="3" aria-expanded="false" aria-controls="pane-3">
+          <span class="acc-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></span>
+          <span class="acc-text"><strong>Launch</strong><small id="accSub3">Review and send</small></span>
+          <span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+  <div class="pane" id="pane-3" data-pane="3" hidden>
+            <h2>Ready for launch?</h2>
+            <div class="summary" id="summary">
+              <p class="summary-lead" id="summaryLead"></p>
+              <dl class="summary-list">
+                <div><dt>Type</dt><dd id="sumType"></dd></div>
+                <div><dt>Look</dt><dd id="sumLook"></dd></div>
+                <div><dt>Features</dt><dd id="sumFeatures"></dd></div>
+                <div><dt>Size</dt><dd id="sumScope"></dd></div>
+              </dl>
+            </div>
+            <div class="build-share">
+              <p class="build-share-label">Keep it or show someone</p>
+              <div class="build-share-row">
+                <button type="button" class="btn btn-outline" id="copyLink" data-action="copy-link">Copy link</button>
+                <button type="button" class="btn btn-outline" id="saveImage" data-action="save-image">Download image</button>
+              </div>
+              <p class="build-share-note" id="shareNote" role="status"></p>
+            </div>
+            <div class="field">
+              <label for="yourName">Your name <small>(optional)</small></label>
+              <input type="text" id="yourName" autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="yourEmail">Your email</label>
+              <input type="email" id="yourEmail" autocomplete="email" placeholder="you@company.com">
+            </div>
+            <div class="field">
+              <label for="yourNotes">Anything else we should know? <small>(optional)</small></label>
+              <textarea id="yourNotes" rows="3" placeholder="Who is it for? What problem does it solve?"></textarea>
+            </div>
+            <input type="text" name="website" class="ship-hp" id="buildHp" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <p class="builder-error" id="buildError" role="alert"></p>
+            <button type="button" class="btn btn-primary builder-send" id="sendBuild">Send this build to Fat Elephant</button>
+            <p class="builder-fine">Your build goes straight to our inbox, and we'll reply to the email you give. See our <a href="/privacy">Privacy Policy</a>.</p>
+
+            <div class="ship-done build-done" id="buildDone" hidden>
+              <div class="ship-check">
+                <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false"><circle class="ship-ring" cx="40" cy="40" r="30"/><path class="ship-tick" d="M27 41l9 9 18-20"/></svg>
+              </div>
+              <p class="ship-heading">Build sent.</p>
+              <p id="buildDoneText" role="status"></p>
+            </div>
+          </div>
+      </section>
         <div class="panel-nav">
           <button type="button" class="panel-back" id="back" disabled>Back</button>
           <button type="button" class="panel-reset" id="reset">Start over</button>
           <button type="button" class="panel-next" id="next">Next</button>
         </div>
       </div>
+
     </div>
 
     <p class="sr-only" id="liveSummary" aria-live="polite"></p>
@@ -365,7 +662,7 @@
         <ul>
           <li><a href="/">Home</a></li>
           <li><a href="/services">Services</a></li>
-          <li><a href="/build">Fat Build</a></li>
+          <li><a href="/build"><span class="fat-build">Fat Build</span></a></li>
           <li><a href="/about">About</a></li>
           <li><a href="/contact">Contact</a></li>
         </ul>
