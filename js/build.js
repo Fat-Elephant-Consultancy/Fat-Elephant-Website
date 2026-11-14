@@ -170,6 +170,8 @@
     reset: document.getElementById('reset'),
     dice: document.getElementById('randomise'),
     send: document.getElementById('sendBuild'),
+    copyLink: document.getElementById('copyLink'),
+    saveImage: document.getElementById('saveImage'),
     stageView: document.getElementById('stageView'),
     tabs: document.getElementById('paletteTabs'),
     grid: document.getElementById('paletteGrid'),
@@ -506,6 +508,8 @@
     el.live.textContent = displayName() + ', ' + t.label + ', ' + lookText + ', ' + feats.length + ' features on.';
 
     if (opts && opts.swap) swapAnimation();
+    fitStage();
+    rememberBuild();
   }
 
   // ---- steps ----
@@ -593,9 +597,319 @@
     pane4.classList.remove('is-sent');
     buildDone.hidden = true;
     sendError.textContent = '';
+    shareNote.textContent = '';
+    started = false;
+    forgetBuild();
+    try { history.replaceState(null, '', location.pathname); } catch (err) { /* ignore */ }
     render({ swap: true });
     showStep(0);
   });
+
+  // ---- share: a link that rebuilds this exact build, and a picture of it ----
+  var BACKDROP_HEX = { cream: '#fffdee', mint: '#e2fbce', white: '#ffffff', midnight: '#06231d' };
+  var shareNote = document.getElementById('shareNote');
+  var noteTimer = null;
+
+  function say(text) {
+    shareNote.textContent = text;
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(function () { shareNote.textContent = ''; }, 4000);
+  }
+
+  function shareUrl() {
+    var p = new URLSearchParams();
+    p.set('t', state.type);
+    p.set('c', state.colour.hex.replace('#', ''));
+    p.set('b', state.backdrop);
+    p.set('s', state.style);
+    var f = featureList();
+    if (f.length) p.set('f', f.join(','));
+    if (state.name.trim()) p.set('n', state.name.trim().slice(0, 40));
+    return location.origin + '/build#' + p.toString().replace(/%2C/g, ',');
+  }
+
+  // Rebuild a shared build from the address. Anything unexpected is ignored, never trusted.
+  function loadFromAddress() {
+    var h = location.hash.replace(/^#/, '');
+    if (!h) return false;
+    var p = new URLSearchParams(h);
+    if (!TYPES.hasOwnProperty(p.get('t'))) return false;
+
+    var s = freshState();
+    s.type = p.get('t');
+
+    var hex = '#' + (p.get('c') || '').toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(hex)) {
+      var found = null;
+      PALETTE.forEach(function (c) { if (c.hex === hex && !found) found = c; });
+      s.colour = found ? { name: found.name, hex: found.hex, family: found.family } : { name: 'Custom', hex: hex, family: '' };
+      if (found) family = found.family;
+    }
+    if (BACKDROPS.hasOwnProperty(p.get('b'))) s.backdrop = p.get('b');
+    if (STYLES.hasOwnProperty(p.get('s'))) s.style = p.get('s');
+    (p.get('f') || '').split(',').forEach(function (k) {
+      if (FEATURES.hasOwnProperty(k)) s.features[k] = true;
+    });
+    s.name = (p.get('n') || '').slice(0, 40);
+
+    state = s;
+    pruneFeatures();
+    el.name.value = state.name;
+    return true;
+  }
+
+  function copyLink() {
+    var url = shareUrl();
+    var done = function () {
+      say('Link copied. Anyone who opens it sees this build.');
+      if (window.feTrack) window.feTrack('fatbuild_share', { method: 'link' });
+    };
+    var fallback = function () {
+      var box = document.createElement('input');
+      box.value = url;
+      box.setAttribute('readonly', '');
+      box.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done();
+      else say('Could not copy automatically. The link is now in your address bar.');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, fallback);
+    } else {
+      fallback();
+    }
+    // keep the address bar in step, so the link can also be copied by hand
+    try { history.replaceState(null, '', '#' + url.split('#')[1]); } catch (err) { /* ignore */ }
+  }
+
+  function fitLines(ctx, text, maxWidth, maxLines) {
+    var words = text.split(' ');
+    var lines = [];
+    var line = '';
+    words.forEach(function (w) {
+      var test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width <= maxWidth || !line) line = test;
+      else { lines.push(line); line = w; }
+    });
+    if (line) lines.push(line);
+    var cut = lines.length > maxLines;
+    if (cut) lines = lines.slice(0, maxLines);
+    lines = lines.map(function (l, i) {
+      var tail = cut && i === lines.length - 1 ? '…' : '';
+      while (ctx.measureText(l + tail).width > maxWidth && l.length > 1) l = l.slice(0, -1);
+      return l + tail;
+    });
+    return lines;
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawCard() {
+    var W = 1200;
+    var H = 630;
+    var cv = document.createElement('canvas');
+    cv.width = W;
+    cv.height = H;
+    var ctx = cv.getContext('2d');
+
+    var bg = BACKDROP_HEX[state.backdrop];
+    var ink = inkFor(bg);
+    var accent = state.colour.hex;
+    var accentInk = inkFor(accent);
+    var t = TYPES[state.type];
+    var feats = featureList().map(function (k) { return FEATURES[k].label; });
+    var display = displayName();
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // right-hand panel in the accent colour, with the four scores
+    var px = 790;
+    var py = 60;
+    var pw = 350;
+    var ph = 510;
+    ctx.fillStyle = accent;
+    roundRect(ctx, px, py, pw, ph, 34);
+    ctx.fill();
+
+    ctx.fillStyle = accentInk;
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = '700 22px Sora, sans-serif';
+    ctx.fillText(scopeLabel(feats.length).toUpperCase(), px + 36, py + 62);
+    ctx.globalAlpha = 0.7;
+    ctx.font = '600 18px Manrope, sans-serif';
+    ctx.fillText(feats.length + (feats.length === 1 ? ' feature' : ' features'), px + 36, py + 90);
+    ctx.globalAlpha = 1;
+
+    var s = stats();
+    [['reach', 'Reach'], ['smarts', 'Smarts'], ['polish', 'Polish'], ['scale', 'Scale']].forEach(function (row, i) {
+      var y = py + 160 + i * 84;
+      ctx.font = '700 17px Sora, sans-serif';
+      ctx.globalAlpha = 0.85;
+      ctx.fillText(row[1].toUpperCase(), px + 36, y);
+      ctx.globalAlpha = 0.22;
+      roundRect(ctx, px + 36, y + 14, pw - 72, 16, 8);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      roundRect(ctx, px + 36, y + 14, Math.max(16, (pw - 72) * s[row[0]] / 100), 16, 8);
+      ctx.fill();
+    });
+
+    // left-hand side
+    var lx = 70;
+    var lw = 650;
+    ctx.fillStyle = ink;
+    ctx.font = '700 20px Sora, sans-serif';
+    ctx.globalAlpha = 0.7;
+    ctx.fillText('FAT BUILD', lx + 34, 84);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.arc(lx + 12, 77, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = ink;
+    ctx.globalAlpha = 0.25;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // product name: one line if it fits, else two smaller lines
+    ctx.fillStyle = ink;
+    var size = 88;
+    var lines;
+    ctx.font = '800 ' + size + 'px Sora, sans-serif';
+    while (size > 60 && ctx.measureText(display).width > lw) {
+      size -= 4;
+      ctx.font = '800 ' + size + 'px Sora, sans-serif';
+    }
+    if (ctx.measureText(display).width <= lw) {
+      lines = [display];
+    } else {
+      size = 60;
+      ctx.font = '800 ' + size + 'px Sora, sans-serif';
+      lines = fitLines(ctx, display, lw, 2);
+    }
+    var y = 190;
+    lines.forEach(function (l) {
+      ctx.fillText(l, lx, y);
+      y += size * 1.12;
+    });
+
+    ctx.font = '600 28px Manrope, sans-serif';
+    ctx.globalAlpha = 0.8;
+    ctx.fillText(t.tagline, lx, y - 12);
+    ctx.globalAlpha = 1;
+    y += 54;
+
+    // facts: type, colour, backdrop, style
+    var facts = [t.label, state.colour.name, BACKDROPS[state.backdrop] + ' backdrop', STYLES[state.style]];
+    var x = lx;
+    ctx.font = '700 19px Manrope, sans-serif';
+    facts.forEach(function (text) {
+      var w = ctx.measureText(text).width + 32;
+      if (x + w > lx + lw) { x = lx; y += 50; }
+      ctx.strokeStyle = ink;
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = 2;
+      roundRect(ctx, x, y, w, 38, 19);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = ink;
+      ctx.fillText(text, x + 16, y + 26);
+      x += w + 10;
+    });
+    y += 66;
+
+    // features
+    var shown = feats.slice(0, 8);
+    var more = feats.length - shown.length;
+    if (more > 0) shown.push('+' + more + ' more');
+    x = lx;
+    ctx.font = '700 18px Manrope, sans-serif';
+    shown.forEach(function (text) {
+      var w = ctx.measureText(text).width + 28;
+      if (x + w > lx + lw) { x = lx; y += 46; }
+      if (y > 520) return;
+      ctx.fillStyle = accent;
+      roundRect(ctx, x, y, w, 34, 17);
+      ctx.fill();
+      ctx.fillStyle = accentInk;
+      ctx.fillText(text, x + 14, y + 23);
+      x += w + 8;
+    });
+
+    ctx.fillStyle = ink;
+    ctx.globalAlpha = 0.7;
+    ctx.font = '700 20px Sora, sans-serif';
+    ctx.fillText('Sketched with Fat Build at fatelephant.co.in/build', lx, 585);
+    ctx.globalAlpha = 1;
+    return cv;
+  }
+
+  function saveImage() {
+    var btn = el.saveImage;
+    btn.disabled = true;
+    var fonts = document.fonts && document.fonts.load ? Promise.all([
+      document.fonts.load('800 60px Sora'),
+      document.fonts.load('700 20px Sora'),
+      document.fonts.load('600 28px Manrope'),
+      document.fonts.load('700 18px Manrope')
+    ]) : Promise.resolve();
+
+    fonts.catch(function () { /* draw with whatever fonts are there */ }).then(function () {
+      drawCard().toBlob(function (blob) {
+        btn.disabled = false;
+        if (!blob) { say('Could not make the image on this device.'); return; }
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = slug().replace('.com', '') + '-fat-build.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+        say('Image saved.');
+        if (window.feTrack) window.feTrack('fatbuild_share', { method: 'image' });
+      }, 'image/png');
+    });
+  }
+
+  el.copyLink.addEventListener('click', copyLink);
+  el.saveImage.addEventListener('click', saveImage);
+
+  // ---- remember the build in this browser, so the Contact page can offer to attach it ----
+  var BUILD_KEY = 'fe_build';
+
+  function rememberBuild() {
+    if (!started) return;
+    var feats = featureList().map(function (k) { return FEATURES[k].label; });
+    try {
+      window.localStorage.setItem(BUILD_KEY, JSON.stringify({
+        product: displayName(),
+        type: TYPES[state.type].label,
+        look: state.colour.name + ' (' + state.colour.hex.toUpperCase() + '), ' + BACKDROPS[state.backdrop] + ' backdrop, ' + STYLES[state.style],
+        features: feats.length ? feats.join(', ') : 'None yet',
+        size: scopeLabel(feats.length),
+        count: feats.length,
+        link: shareUrl()
+      }));
+    } catch (err) { /* private mode: nothing is remembered */ }
+  }
+
+  function forgetBuild() {
+    try { window.localStorage.removeItem(BUILD_KEY); } catch (err) { /* ignore */ }
+  }
 
   // ---- send the build to us ----
   var sendError = document.getElementById('buildError');
@@ -621,7 +935,7 @@
     el.send.disabled = true;
     el.send.textContent = 'Sending...';
 
-    sendToFormspree({
+    sendForm({
       email: email,
       name: who,
       product: displayName(),
@@ -638,6 +952,7 @@
       document.getElementById('buildDoneText').textContent =
         "We've got your build and we'll write back to " + email + '.';
       if (window.feTrack) window.feTrack('fatbuild_submit', { product_type: state.type, features: feats.length });
+      forgetBuild();
       pane4.classList.add('is-sent');
       buildDone.hidden = false;
     }).catch(function () {
@@ -677,8 +992,36 @@
     });
   }
 
+  // On small screens the preview is pinned under the menu bar, so shrink it to fit the room
+  var stageFloat = device.parentNode;
+  var compact = window.matchMedia('(max-width: 980px)');
+  var navbar = document.querySelector('.navbar');
+
+  function fitStage() {
+    if (navbar) document.documentElement.style.setProperty('--nav-h', navbar.offsetHeight + 'px');
+
+    if (!compact.matches) {
+      device.style.scale = '';
+      stageFloat.style.height = '';
+      return;
+    }
+
+    device.style.scale = '1';
+    stageFloat.style.height = '';
+    var natural = device.offsetHeight;
+    var room = Math.min(220, window.innerHeight * 0.28);
+    // never shrink below a readable size: a very tall preview is cropped to the pinned frame instead
+    var k = Math.max(0.4, Math.min(1, room / natural));
+    device.style.scale = k.toFixed(3);
+    stageFloat.style.height = Math.ceil(Math.min(natural * k, room)) + 'px';
+  }
+
+  window.addEventListener('resize', fitStage);
+  window.addEventListener('load', fitStage);
+
   buildPalette();
   buildFeatures();
+  var shared = loadFromAddress();
   render();
-  showStep(0);
+  showStep(shared ? 3 : 0);
 })();

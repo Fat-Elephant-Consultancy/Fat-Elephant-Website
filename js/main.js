@@ -82,17 +82,22 @@ if ('IntersectionObserver' in window && revealEls.length && !prefersReducedMotio
   });
 }
 
-// Every form on the site sends to one Formspree form, which emails the message to us.
-// "source" says which form it came from.
-var FORMSPREE_URL = 'https://formspree.io/f/xpppdvbo';
+// Every form on the site sends to one small Google Apps Script (scripts/form-mailer.gs),
+// which emails the message to hello@fatelephant.co.in and logs it in a Google Sheet.
+// "source" says which form it came from. The body is plain text holding JSON, which keeps
+// the request "simple" so the browser needs no extra permission check first.
+var FORM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyjoL61CZmInTvzCY4ro7r7sMnxoXX6yuAxOeOP3XMdOUjpy503ljCzcRBPgSwmR1UMBw/exec';
 
-function sendToFormspree(fields) {
-  return fetch(FORMSPREE_URL, {
+function sendForm(fields) {
+  return fetch(FORM_ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(fields)
   }).then(function (res) {
     if (!res.ok) throw new Error('send failed');
+    return res.json();
+  }).then(function (result) {
+    if (!result || !result.ok) throw new Error('send failed');
   });
 }
 
@@ -104,6 +109,27 @@ if (contactForm) {
   var contactNote = contactForm.querySelector('.form-note');
   var contactDone = document.getElementById('contactDone');
   var contactNoteHtml = contactNote.innerHTML;
+
+  // If the visitor has played with Fat Build, offer to send it along with the message.
+  // It was only ever saved in this browser, and it is sent only if the box stays ticked.
+  var savedBuild = null;
+  var attachBox = null;
+  try { savedBuild = JSON.parse(window.localStorage.getItem('fe_build') || 'null'); } catch (err) { savedBuild = null; }
+
+  if (savedBuild && typeof savedBuild.product === 'string' && typeof savedBuild.link === 'string' &&
+      savedBuild.link.indexOf(location.origin + '/build#') === 0) {
+    var attach = document.createElement('label');
+    attach.className = 'build-attach';
+    attach.innerHTML = '<input type="checkbox" id="attachBuild" checked><span></span>';
+    var attachText = attach.querySelector('span');
+    var attachName = document.createElement('strong');
+    attachName.textContent = savedBuild.product;
+    attachText.appendChild(document.createTextNode('Include the product you sketched in Fat Build: '));
+    attachText.appendChild(attachName);
+    attachText.appendChild(document.createTextNode(' (' + savedBuild.type + ', ' + savedBuild.count + (savedBuild.count === 1 ? ' feature' : ' features') + ').'));
+    contactForm.querySelector('textarea').closest('.field').insertAdjacentElement('afterend', attach);
+    attachBox = attach.querySelector('input');
+  }
 
   contactForm.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -121,14 +147,28 @@ if (contactForm) {
     contactNote.className = 'form-note';
     contactNote.innerHTML = contactNoteHtml;
 
-    sendToFormspree({
+    var payload = {
       name: name,
       email: email,
       project: project,
       message: message,
       source: 'contact-page',
       _subject: 'New project inquiry: ' + project
-    }).then(function () {
+    };
+
+    var attached = !!(attachBox && attachBox.checked);
+    if (attached) {
+      payload.fat_build = savedBuild.product + ': ' + savedBuild.type + ', ' + savedBuild.look +
+        ', features: ' + savedBuild.features + ' (' + savedBuild.size + ')';
+      payload.fat_build_link = savedBuild.link;
+    }
+
+    sendForm(payload).then(function () {
+      if (attached) {
+        try { window.localStorage.removeItem('fe_build'); } catch (err) { /* ignore */ }
+        attachBox.closest('.build-attach').hidden = true;
+        attachBox = null;
+      }
       document.getElementById('contactDoneText').textContent =
         "Thanks, " + name.split(' ')[0] + ". We've got it and we'll write back to " + email + '.';
       if (window.feTrack) window.feTrack('contact_submit', { project: project });
@@ -621,7 +661,7 @@ if (canHover && !prefersReducedMotion) {
 
     // Step two: an email address is required before anything is shipped
     var deliver = function (email) {
-      return sendToFormspree({
+      return sendForm({
         email: email,
         answer: pending.answer,
         note: pending.note,
