@@ -84,7 +84,6 @@
   --font-body: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-hand: "Caveat", "Segoe Script", cursive;
   --font-coco: "Coco Gothic", var(--font-display);
-  --font-fat: "Amatic SC", "Caveat", cursive; /* tall hand-lettered capitals, like the FAT in the logo */
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
@@ -3366,16 +3365,17 @@ body.page-about .cta-banner {
   color: var(--teal-darkest);
 }
 
-/* "Fat Build" is always set in the hand-lettered capitals of the FAT in the logo.
-   The font runs small for its size, so it is scaled up to sit level with the text around it. */
+/* "Fat Build" is the Fat Build wordmark (assets/fat-build.png): tall hand-lettered FAT and a heavy BUILD.
+   It is drawn as a mask in the colour of the surrounding text, so it suits light and dark backgrounds,
+   and the words stay in the page for screen readers and search engines. */
 .fat-build {
-  font-family: var(--font-fat);
-  font-size: 1.5em;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
+  display: inline-block;
+  height: 1.5em;
+  aspect-ratio: 555 / 174;
+  vertical-align: baseline;
+  background-color: currentColor;
+  -webkit-mask: url("../assets/fat-build.png") center / contain no-repeat;
+  mask: url("../assets/fat-build.png") center / contain no-repeat;
 }
 
 /* ---------- Ambient cursor glow ---------- */

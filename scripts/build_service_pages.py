@@ -65,7 +65,7 @@ HEAD = '''<!DOCTYPE html>
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="page-service">
@@ -132,7 +132,7 @@ def body(s):
     <p class="svc-lede">%s</p>
     <div class="svc-actions">
       <a href="/contact" class="btn btn-primary">Start a Project</a>
-      <a href="/build" class="btn btn-outline">Try <span class="fat-build">Fat Build</span></a>
+      <a href="/build" class="btn btn-outline">Try <span class="fat-build"><span class="sr-only">Fat Build</span></span></a>
     </div>
   </div>
 </div>
@@ -237,7 +237,7 @@ def body(s):
       </div>
       <div class="cta-actions">
         <a href="/contact" class="btn btn-primary">Start a Project</a>
-        <a href="/build" class="btn btn-outline">Try <span class="fat-build">Fat Build</span></a>
+        <a href="/build" class="btn btn-outline">Try <span class="fat-build"><span class="sr-only">Fat Build</span></span></a>
       </div>
     </div>
   </div>

@@ -793,6 +793,26 @@
     ctx.closePath();
   }
 
+  // The Fat Build wordmark, tinted to the colour in use. "height" is the height of the whole mark.
+  // Returns the width drawn.
+  var wordmark = new Image();
+  wordmark.src = '/assets/fat-build.png';
+
+  function drawBrand(ctx, x, y, height) {
+    if (!wordmark.complete || !wordmark.naturalWidth) return 0;
+    var w = Math.round(height * wordmark.naturalWidth / wordmark.naturalHeight);
+    var tint = document.createElement('canvas');
+    tint.width = w;
+    tint.height = Math.round(height);
+    var t = tint.getContext('2d');
+    t.drawImage(wordmark, 0, 0, tint.width, tint.height);
+    t.globalCompositeOperation = 'source-in';
+    t.fillStyle = ctx.fillStyle;
+    t.fillRect(0, 0, tint.width, tint.height);
+    ctx.drawImage(tint, x, y - tint.height);
+    return w;
+  }
+
   function drawCard() {
     var W = 1200;
     var H = 630;
@@ -848,9 +868,8 @@
     var lx = 70;
     var lw = 650;
     ctx.fillStyle = ink;
-    ctx.font = '700 38px "Amatic SC", Sora, sans-serif'; // the hand-lettered capitals of the logo's FAT
-    ctx.globalAlpha = 0.8;
-    ctx.fillText('FAT BUILD', lx + 34, 86);
+    ctx.globalAlpha = 0.9;
+    drawBrand(ctx, lx + 34, 90, 34);
     ctx.globalAlpha = 1;
     ctx.fillStyle = accent;
     ctx.beginPath();
@@ -930,15 +949,12 @@
     ctx.fillStyle = ink;
     ctx.globalAlpha = 0.7;
     var lead = 'Sketched with ';
-    var brand = 'FAT BUILD';
     ctx.font = '700 20px Sora, sans-serif';
     ctx.fillText(lead, lx, 585);
-    var bx = lx + ctx.measureText(lead).width;
-    ctx.font = '700 32px "Amatic SC", Sora, sans-serif';
-    ctx.fillText(brand, bx, 585);
-    var tx = bx + ctx.measureText(brand).width;
+    var bx = lx + ctx.measureText(lead).width + 4;
+    var bw = drawBrand(ctx, bx, 588, 30);
     ctx.font = '700 20px Sora, sans-serif';
-    ctx.fillText(' at fatelephant.co.in/build', tx, 585);
+    ctx.fillText(' at fatelephant.co.in/build', bx + bw + 2, 585);
     ctx.globalAlpha = 1;
     return cv;
   }
@@ -950,7 +966,6 @@
     var fonts = document.fonts && document.fonts.load ? Promise.all([
       document.fonts.load('800 60px Sora'),
       document.fonts.load('700 20px Sora'),
-      document.fonts.load('700 32px "Amatic SC"'),
       document.fonts.load('600 28px Manrope'),
       document.fonts.load('700 18px Manrope')
     ]) : Promise.resolve();

@@ -126,7 +126,7 @@ if (contactForm) {
     attachName.textContent = savedBuild.product;
     var attachBrand = document.createElement('span');
     attachBrand.className = 'fat-build';
-    attachBrand.textContent = 'Fat Build';
+    attachBrand.innerHTML = '<span class="sr-only">Fat Build</span>';
     attachText.appendChild(document.createTextNode('Include the product you sketched in '));
     attachText.appendChild(attachBrand);
     attachText.appendChild(document.createTextNode(': '));
