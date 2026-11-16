@@ -3,11 +3,17 @@
 // To switch it on, paste the GA4 measurement ID below (it looks like G-XXXXXXXXXX).
 // Until an ID is set, this file loads nothing, shows no banner and sets no cookies,
 // and window.feTrack() quietly does nothing, so the rest of the site can call it freely.
+//
+// Even with an ID, nothing is fetched from Google and nothing is sent until the visitor
+// presses Accept. Declining (or ignoring the banner) leaves Google's script unloaded.
 (function () {
-  var GA_MEASUREMENT_ID = '';
+  var GA_MEASUREMENT_ID = 'G-95RK052HQZ';
 
   var STORE_KEY = 'fe_consent';
-  var enabled = false;
+  var enabled = false;   // an ID is set
+  var loaded = false;    // Google's script has been added to the page
+  var consented = false; // the visitor has said yes
+  var measurementId = '';
   var banner = null;
 
   window.dataLayer = window.dataLayer || [];
@@ -15,9 +21,9 @@
     window.dataLayer.push(arguments);
   }
 
-  // Safe to call anywhere. Sends a GA4 event once analytics is on.
+  // Safe to call anywhere. Sends a GA4 event only once analytics is on and the visitor has accepted.
   window.feTrack = function (name, params) {
-    if (!enabled) return;
+    if (!enabled || !loaded || !consented) return;
     gtag('event', name, params || {});
   };
 
@@ -29,13 +35,29 @@
     try { window.localStorage.setItem(STORE_KEY, value); } catch (e) { /* private mode: the choice just lasts for this visit */ }
   }
 
+  // Google's script is fetched only after the visitor accepts
+  function loadGoogle() {
+    if (loaded) return;
+    loaded = true;
+
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(measurementId);
+    document.head.appendChild(s);
+
+    gtag('js', new Date());
+    gtag('config', measurementId);
+  }
+
   function applyConsent(granted) {
+    consented = granted;
     gtag('consent', 'update', {
       analytics_storage: granted ? 'granted' : 'denied',
       ad_storage: 'denied',
       ad_user_data: 'denied',
       ad_personalization: 'denied'
     });
+    if (granted) loadGoogle();
   }
 
   function hideBanner() {
@@ -116,6 +138,7 @@
   function init(id) {
     if (enabled || !id) return;
     enabled = true;
+    measurementId = id;
 
     // Consent Mode v2: everything starts denied until the visitor chooses
     gtag('consent', 'default', {
@@ -126,16 +149,9 @@
       wait_for_update: 500
     });
 
+    // a returning visitor who already said yes; everyone else loads nothing until they do
     var choice = readChoice();
     if (choice === 'granted') applyConsent(true);
-
-    var s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
-    document.head.appendChild(s);
-
-    gtag('js', new Date());
-    gtag('config', id);
 
     trackClicks();
     addFooterLink();
